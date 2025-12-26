@@ -15,19 +15,31 @@
                     </div>
                     <h1 class="text-4xl font-black text-white tracking-tight italic">Maplio</h1>
                 </div>
-                <button
-                    @click="handleGoogleLogin"
-                    class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all hover:bg-slate-100"
-                >
-                    <img
-                        src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png"
-                        width="20"
-                        alt="Google"
-                    />
-                    使用 Google 帳號登入
-                </button>
+                <div class="space-y-4">
+                    <button
+                        @click="handleGoogleLogin"
+                        class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all hover:bg-slate-100"
+                    >
+                        <img
+                            src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png"
+                            width="20"
+                            alt="Google"
+                        />
+                        使用 Google 帳號登入
+                    </button>
+                    <button
+                        @click="enterDemoMode"
+                        class="w-full py-4 bg-slate-800 text-slate-300 rounded-2xl font-bold border border-slate-700 hover:bg-slate-700 transition-all active:scale-95 group"
+                    >
+                        直接試用 (不需登入)
+                        <p
+                            class="text-[10px] text-slate-600 uppercase tracking-widest mt-1 group-hover:text-slate-500 transition-colors"
+                        >
+                            資料將儲存於您的瀏覽器中
+                        </p>
+                    </button>
+                </div>
             </div>
-
             <div
                 class="absolute bottom-8 text-[10px] font-bold text-slate-600 tracking-widest uppercase"
             >
@@ -46,13 +58,17 @@
                     >
                         我的旅程
                     </h1>
-
                     <span
-                        class="text-[9px] font-bold px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded-md border border-slate-700"
+                        v-if="isDemoMode"
+                        class="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black uppercase"
+                    >
+                        Demo Mode
+                    </span>
+                    <span
+                        class="hidden sm:block text-[9px] font-bold px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded-md border border-slate-700"
                     >
                         {{ appVersion }}
                     </span>
-
                     <span v-if="currentTrip" class="hidden md:block text-slate-700">/</span>
                     <span
                         v-if="currentTrip"
@@ -64,6 +80,7 @@
                     <button
                         @click="logout"
                         class="text-slate-500 hover:text-red-400 transition-colors px-2"
+                        title="登出並重置"
                     >
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
@@ -83,7 +100,9 @@
                         v-if="showCreateForm"
                         class="max-w-md mx-auto p-8 bg-slate-800 rounded-[2.5rem] border border-blue-500/30 animate-fade space-y-6 mb-10 shadow-2xl"
                     >
-                        <h3 class="font-bold text-xl text-blue-400">建立新旅程</h3>
+                        <h3 class="font-bold text-xl text-blue-400">
+                            建立新旅程 {{ isDemoMode ? '(本地儲存)' : '' }}
+                        </h3>
                         <div class="space-y-4">
                             <div>
                                 <label class="text-[10px] text-slate-500 font-black uppercase ml-1"
@@ -92,7 +111,7 @@
                                 <input
                                     v-model="newTrip.name"
                                     placeholder="例如：東京跨年五日遊..."
-                                    class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-blue-500"
+                                    class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-blue-500 text-white"
                                 />
                             </div>
                             <div class="flex gap-4">
@@ -104,7 +123,7 @@
                                     <input
                                         type="date"
                                         v-model="newTrip.startDate"
-                                        class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none"
+                                        class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none text-white"
                                     />
                                 </div>
                                 <div class="w-24">
@@ -116,7 +135,7 @@
                                         type="number"
                                         v-model="newTrip.duration"
                                         min="1"
-                                        class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none"
+                                        class="w-full bg-slate-900 border-none rounded-xl px-4 py-3 outline-none text-white"
                                     />
                                 </div>
                             </div>
@@ -263,8 +282,10 @@
                                     </div>
                                 </div>
                                 <button
+                                    v-if="!isDemoMode"
                                     @click="copyShareLink"
                                     class="shrink-0 bg-slate-800 text-slate-400 p-3 rounded-2xl hover:text-blue-500 transition-colors"
+                                    title="分享行程"
                                 >
                                     <i class="fa-solid fa-share-nodes"></i>
                                 </button>
@@ -287,7 +308,7 @@
                                         @keydown.enter="handleEnter"
                                         @blur="setTimeout(() => (showDropdown = false), 250)"
                                         placeholder="搜尋地點並加入行程..."
-                                        class="w-full pl-12 pr-4 py-4 bg-slate-800/50 rounded-2xl text-sm outline-none border border-transparent focus:border-blue-500/50 transition-all shadow-inner"
+                                        class="w-full pl-12 pr-4 py-4 bg-slate-800/50 rounded-2xl text-sm outline-none border border-transparent focus:border-blue-500/50 transition-all shadow-inner text-white"
                                     />
                                 </div>
                                 <div
@@ -336,7 +357,7 @@
                                                         >
                                                             <span
                                                                 v-if="element.timeStart"
-                                                                class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-md font-black"
+                                                                class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-md font-black italic"
                                                                 >{{ element.timeStart }} -
                                                                 {{ element.timeEnd }}</span
                                                             >
@@ -403,7 +424,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
                                                 <div
                                                     v-if="editingSpotId !== element.id"
                                                     class="flex flex-col gap-3"
@@ -453,7 +473,7 @@
                                                         >
                                                             <span
                                                                 v-if="element.transStart"
-                                                                class="font-black text-slate-400 mr-2"
+                                                                class="font-black text-slate-400 mr-2 italic"
                                                                 >{{ element.transStart }}-{{
                                                                     element.transEnd
                                                                 }}</span
@@ -511,15 +531,17 @@
                                     </div>
                                 </template>
                             </draggable>
+
                             <div
                                 v-if="currentDaySpots.length === 0"
                                 class="text-center py-20 text-slate-700 border-2 border-dashed border-slate-800 rounded-[3rem]"
                             >
-                                <p class="text-sm font-bold">今天還沒安排行程，試試搜尋景點吧！</p>
+                                <p class="text-sm font-bold tracking-tight">
+                                    今天還沒安排行程，試試搜尋景點吧！
+                                </p>
                             </div>
                         </div>
                     </aside>
-
                     <div
                         id="desktop-map"
                         class="hidden md:block flex-grow h-full bg-slate-900"
@@ -536,7 +558,6 @@ import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
 import {
     doc,
     setDoc,
-    getDoc,
     onSnapshot,
     collection,
     addDoc,
@@ -561,6 +582,7 @@ export default {
     components: { draggable },
     data() {
         return {
+            isDemoMode: false,
             user: null,
             trips: [],
             currentTrip: null,
@@ -585,6 +607,7 @@ export default {
             tempTransportNotes: '',
             tempTransStart: '',
             tempTransEnd: '',
+            resizeTimer: null,
             appVersion: import.meta.env.VITE_APP_VERSION || 'v0.0.0-dev'
         }
     },
@@ -604,31 +627,25 @@ export default {
             this.editingSpotId = null
             this.editingTransportId = null
         },
-        // 監聽景點清單的長度或內容變動
         currentDaySpots: {
-            handler(newVal) {
-                if (this.map) {
-                    // 資料變動時，重新計算標記與縮放
-                    this.renderMarkers()
-                }
+            handler() {
+                if (this.map) this.renderMarkers()
             },
-            deep: true // 必須開啟深度監聽
+            deep: true
         }
     },
     mounted() {
         onAuthStateChanged(auth, (user) => {
-            this.user = user
-            if (user) {
+            if (user && !this.isDemoMode) {
+                this.user = user
                 this.fetchTrips()
                 this.checkUrlParams()
             }
         })
 
-        // 效能優化：防抖視窗縮放
-        let resizeTimer
         window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer)
-            resizeTimer = setTimeout(() => {
+            clearTimeout(this.resizeTimer)
+            this.resizeTimer = setTimeout(() => {
                 if (this.map) {
                     const targetId = window.innerWidth >= 768 ? 'desktop-map' : 'mobile-map'
                     if (this.map.getContainer().id !== targetId) {
@@ -641,6 +658,11 @@ export default {
         })
     },
     methods: {
+        enterDemoMode() {
+            this.isDemoMode = true
+            this.user = { uid: 'demo-user', displayName: 'Demo Visitor' }
+            this.fetchTrips()
+        },
         async handleGoogleLogin() {
             try {
                 await signInWithPopup(auth, googleProvider)
@@ -650,29 +672,33 @@ export default {
         },
         logout() {
             if (confirm('確定登出？')) {
-                signOut(auth)
+                if (!this.isDemoMode) signOut(auth)
+                this.user = null
+                this.isDemoMode = false
                 this.currentTrip = null
             }
         },
-
         getDayDate(dayIndex) {
             if (!this.currentTrip || !this.currentTrip.startDate) return ''
             const date = new Date(this.currentTrip.startDate)
             date.setDate(date.getDate() + dayIndex)
             return `${date.getMonth() + 1}/${date.getDate()}`
         },
-
         fetchTrips() {
-            const q = query(
-                collection(db, 'trips'),
-                where('owner', '==', this.user.uid),
-                orderBy('createdAt', 'desc')
-            )
-            onSnapshot(q, (snap) => {
-                this.trips = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-            })
+            if (this.isDemoMode) {
+                const data = localStorage.getItem('maplio_demo_data')
+                this.trips = data ? JSON.parse(data) : []
+            } else {
+                const q = query(
+                    collection(db, 'trips'),
+                    where('owner', '==', this.user.uid),
+                    orderBy('createdAt', 'desc')
+                )
+                onSnapshot(q, (snap) => {
+                    this.trips = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+                })
+            }
         },
-
         bindTrip(tripId) {
             onSnapshot(doc(db, 'trips', tripId), (docSnap) => {
                 if (docSnap.exists()) {
@@ -681,85 +707,80 @@ export default {
                 }
             })
         },
-
         async createNewTrip() {
             if (!this.newTrip.name || !this.newTrip.startDate) return alert('請填寫完整資訊')
             const itinerary = Array.from({ length: this.newTrip.duration }, () => ({ spots: [] }))
-            await addDoc(collection(db, 'trips'), {
-                name: this.newTrip.name,
-                startDate: this.newTrip.startDate,
-                owner: this.user.uid,
-                itinerary: itinerary,
-                createdAt: new Date()
-            })
-            this.showCreateForm = false
+
+            if (this.isDemoMode) {
+                const trip = {
+                    id: 'demo_' + Date.now(),
+                    name: this.newTrip.name,
+                    startDate: this.newTrip.startDate,
+                    owner: 'demo-user',
+                    itinerary,
+                    createdAt: new Date().toISOString()
+                }
+                this.trips.unshift(trip)
+                localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
+                this.showCreateForm = false
+            } else {
+                await addDoc(collection(db, 'trips'), {
+                    name: this.newTrip.name,
+                    startDate: this.newTrip.startDate,
+                    owner: this.user.uid,
+                    itinerary,
+                    createdAt: new Date()
+                })
+                this.showCreateForm = false
+            }
             this.newTrip = { name: '', startDate: '', duration: 1 }
         },
-
-        // 修改 App.vue 中的 initMap 方法
         initMap() {
             this.$nextTick(() => {
                 const isMobile = window.innerWidth < 768
                 const targetId = isMobile ? 'mobile-map' : 'desktop-map'
-                const el = document.getElementById(targetId)
-
-                if (!el) return
-
-                // 1. 強力清理：確保舊地圖實例及其所有的監聽器完全移除
                 if (this.map) {
                     try {
-                        this.map.off() // 移除所有事件監聽
+                        this.map.off()
                         this.map.remove()
                     } catch (e) {
-                        console.warn('Map removal error:', e)
+                        console.warn(e)
                     }
                     this.map = null
                 }
-
-                // 2. 初始化：開啟平滑動畫並優化渲染
                 this.map = L.map(targetId, {
                     zoomControl: false,
                     attributionControl: false,
-                    preferCanvas: true, // 核心優化：使用 Canvas 繪製點位
-                    tap: false, // 停用 Mobile 點擊延遲
+                    preferCanvas: true,
+                    tap: false,
                     fadeAnimation: true,
                     zoomAnimation: true
                 }).setView([25.03, 121.56], 13)
 
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    updateWhenIdle: true, // 僅在停止移動後加載新圖磚
-                    keepBuffer: 2 // 預載緩衝區圖磚
+                    updateWhenIdle: true,
+                    keepBuffer: 2
                 }).addTo(this.map)
 
-                // 3. 雙重校正：解決行動端因佈局切換導致的解析度錯誤（灰塊問題）
                 this.map.whenReady(() => {
                     this.renderMarkers()
                     setTimeout(() => {
-                        if (this.map) {
-                            this.map.invalidateSize()
-                            this.renderMarkers() // 這裡會觸發第一次 flyToBounds
-                        }
+                        if (this.map) this.map.invalidateSize()
+                        this.renderMarkers()
                     }, 300)
                 })
             })
         },
-
         renderMarkers() {
-            // 1. 基本檢查：地圖與行程資料必須存在
             if (!this.map || !this.currentTrip) return
-
             const isMobile = window.innerWidth < 768
             const spotList = this.currentDaySpots || []
-
-            // 2. 清理舊標記 (維持原有邏輯)
             this.markers.forEach((m) => this.map.removeLayer(m))
             this.markers = []
 
-            // 3. 收集座標點
             const latlngs = []
             spotList.forEach((s) => {
                 if (s.lat && s.lng) {
-                    // 確保座標有效
                     const m = L.marker([s.lat, s.lng])
                         .addTo(this.map)
                         .bindPopup(`<b style="color:#1e1b4b">${s.name}</b>`)
@@ -768,25 +789,21 @@ export default {
                 }
             })
 
-            // 4. 【核心修復】自動縮放邏輯
             if (latlngs.length > 0) {
-                // 建立包含所有點位的邊界物件
-                const bounds = L.latLngBounds(latlngs)
-
-                // 使用 flyToBounds 平滑移動並自動調整縮放等級
-                this.map.flyToBounds(bounds, {
-                    padding: isMobile ? [30, 30] : [60, 60], // 預留邊距，防止點位被 UI 擋住
-                    duration: isMobile ? 0.6 : 1.0, // 動畫持續時間
-                    maxZoom: 15 // 避免只有一個點時縮放過頭（zoom 到屋頂）
+                this.map.flyToBounds(L.latLngBounds(latlngs), {
+                    padding: isMobile ? [30, 30] : [60, 60],
+                    duration: 0.6,
+                    maxZoom: 15
                 })
-            } else {
-                // 如果當天沒景點，自動回到預設視野（例如：台灣中心點或最後位置）
-                // this.map.flyTo([25.03, 121.56], 13);
             }
         },
-
         selectTrip(trip) {
-            this.bindTrip(trip.id)
+            if (this.isDemoMode) {
+                this.currentTrip = JSON.parse(JSON.stringify(trip))
+                this.initMap()
+            } else {
+                this.bindTrip(trip.id)
+            }
         },
         backToList() {
             this.currentTrip = null
@@ -796,10 +813,8 @@ export default {
             }
             window.history.pushState({}, '', window.location.pathname)
         },
-
         handleEnter() {
-            if (this.isComposing || !this.searchQuery) return
-            this.performSearch()
+            if (!this.isComposing && this.searchQuery) this.performSearch()
         },
         async performSearch() {
             this.isSearching = true
@@ -815,7 +830,6 @@ export default {
                 this.isSearching = false
             }
         },
-
         selectLocation(result) {
             const spot = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
@@ -835,14 +849,18 @@ export default {
             this.showDropdown = false
             this.saveData()
         },
-
         async saveData() {
             if (!this.currentTrip) return
-            await setDoc(doc(db, 'trips', this.currentTrip.id), this.currentTrip)
-            // 保存後立即重繪地圖與縮放
-            this.renderMarkers()
+            if (this.isDemoMode) {
+                const idx = this.trips.findIndex((t) => t.id === this.currentTrip.id)
+                if (idx !== -1) this.trips[idx] = JSON.parse(JSON.stringify(this.currentTrip))
+                localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
+                this.renderMarkers()
+            } else {
+                await setDoc(doc(db, 'trips', this.currentTrip.id), this.currentTrip)
+                this.renderMarkers()
+            }
         },
-
         startEditTripName() {
             this.tempTripName = this.currentTrip.name
             this.isEditingTripName = true
@@ -855,7 +873,6 @@ export default {
             }
             this.isEditingTripName = false
         },
-
         startEditSpot(spot) {
             this.editingSpotId = spot.id
             this.tempSpotName = spot.name
@@ -872,7 +889,6 @@ export default {
             this.editingSpotId = null
             await this.saveData()
         },
-
         startEditTransport(spot) {
             this.editingTransportId = spot.id
             this.tempTransportNotes = spot.transportNotes || ''
@@ -890,9 +906,15 @@ export default {
             this.editingTransportId = null
             await this.saveData()
         },
-
         async deleteTrip(tripId) {
-            if (confirm('確定刪除整份行程？')) await deleteDoc(doc(db, 'trips', tripId))
+            if (confirm('確定刪除整份行程？')) {
+                if (this.isDemoMode) {
+                    this.trips = this.trips.filter((t) => t.id !== tripId)
+                    localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
+                } else {
+                    await deleteDoc(doc(db, 'trips', tripId))
+                }
+            }
         },
         addDay() {
             this.currentTrip.itinerary.push({ spots: [] })
@@ -907,35 +929,25 @@ export default {
                 await this.saveData()
             }
         },
-
-        // 修改後的搜尋方法
         searchOnMaps(spot) {
             if (!spot.lat || !spot.lng) return
-
-            // 使用 Google Maps Search API
-            // query 帶入座標，Google Maps 會自動標記該點，
-            // 並在側邊欄顯示該座標對應或最靠近的景點/商家資訊
-            const url = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`
-
-            window.open(url, '_blank')
-        },
-        navFromCurrent(spot) {
             window.open(
-                `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`,
+                `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`,
                 '_blank'
             )
         },
         navBetweenSpots(start, end, mode) {
             let url = `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}`
-            if (mode && mode !== 'auto') url += `&travelmode=${mode}`
+            if (mode === 'driving') url += '&travelmode=driving'
+            else if (mode === 'transit') url += '&travelmode=transit'
+            else if (mode === 'walking') url += '&travelmode=walking'
             window.open(url, '_blank')
         },
-
         copyShareLink() {
             navigator.clipboard.writeText(
                 `${window.location.origin}${window.location.pathname}?tripId=${this.currentTrip.id}`
             )
-            alert('共享連結已複製！傳給好友即可即時共編。')
+            alert('共享連結已複製！')
         },
         checkUrlParams() {
             const id = new URLSearchParams(window.location.search).get('tripId')
@@ -966,20 +978,17 @@ export default {
         transform: translateY(0);
     }
 }
-
 #desktop-map,
 #mobile-map {
     background: #0f172a;
     will-change: transform;
 }
-
 input[type='time']::-webkit-calendar-picker-indicator,
 input[type='date']::-webkit-calendar-picker-indicator {
     filter: invert(1);
     opacity: 0.5;
     cursor: pointer;
 }
-
 .sortable-ghost {
     opacity: 0.2;
     background: #3b82f6 !important;
@@ -989,8 +998,6 @@ select {
     -webkit-appearance: none;
     appearance: none;
 }
-
-/* 針對行動裝置優化捲動 */
 aside,
 main > div {
     -webkit-overflow-scrolling: touch;
