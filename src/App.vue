@@ -682,7 +682,9 @@ export default {
             if (!this.currentTrip || !this.currentTrip.startDate) return ''
             const date = new Date(this.currentTrip.startDate)
             date.setDate(date.getDate() + dayIndex)
-            return `${date.getMonth() + 1}/${date.getDate()}`
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+            const dayName = weekDays[date.getDay()]
+            return `${date.getMonth() + 1}/${date.getDate()} (${dayName})`
         },
         fetchTrips() {
             if (this.isDemoMode) {
