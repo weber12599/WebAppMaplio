@@ -123,6 +123,14 @@
                     @cancel="showManualSpotForm = false"
                     @confirm="addManualSpot"
                 />
+
+                <TransportDialog
+                    v-if="showTransportDialog"
+                    v-model="editingTransportSpot"
+                    :themeConfig="activeThemeConfig"
+                    @cancel="showTransportDialog = false"
+                    @confirm="updateTransportInfo"
+                />
             </main>
         </div>
     </div>
@@ -145,6 +153,7 @@ import SpotDialog from './components/Trip/SpotDialog.vue'
 import DayTabs from './components/Planner/DayTabs.vue'
 import SearchBar from './components/Planner/SearchBar.vue'
 import LeafletMap from './components/Map/LeafletMap.vue'
+import TransportDialog from './components/Planner/TransportDialog.vue'
 
 export default {
     components: {
@@ -157,7 +166,8 @@ export default {
         SpotDialog,
         DayTabs,
         SearchBar,
-        LeafletMap
+        LeafletMap,
+        TransportDialog
     },
     data() {
         return {
@@ -172,6 +182,8 @@ export default {
             searchResults: [],
             isSearching: false,
             isEditingExistingSpot: false,
+            showTransportDialog: false,
+            editingTransportSpot: null,
             activeTheme: localStorage.getItem('maplio_theme') || 'dark',
             appVersion: import.meta.env.VITE_APP_VERSION || 'v1.2.0'
         }
@@ -350,11 +362,18 @@ export default {
             this.saveData()
         },
         startEditTransport(spot) {
-            const n = prompt('輸入交通備註:', spot.transportNotes || '')
-            if (n !== null) {
-                spot.transportNotes = n
+            this.editingTransportSpot = spot
+            this.showTransportDialog = true
+        },
+        updateTransportInfo(updatedSpotData) {
+            // 找到該景點並更新其交通屬性
+            const idx = this.currentDaySpots.findIndex((s) => s.id === updatedSpotData.id)
+            if (idx !== -1) {
+                this.currentDaySpots[idx] = { ...updatedSpotData }
                 this.saveData()
             }
+            this.showTransportDialog = false
+            this.editingTransportSpot = null
         }
     }
 }
