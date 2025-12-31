@@ -1,39 +1,63 @@
 <template>
     <header
-        class="p-4 md:p-6 md:px-10 flex justify-between items-center bg-slate-900/80 backdrop-blur-md border-b border-slate-800 z-30 shrink-0"
+        :class="[
+            'p-4 md:p-6 md:px-10 flex justify-between items-center z-30 shrink-0 border-b transition-colors duration-500',
+            themeClass
+        ]"
     >
         <div class="flex items-center gap-4">
             <h1
-                class="text-xl md:text-2xl font-black text-white cursor-pointer hover:text-blue-400 transition-colors"
+                class="text-xl md:text-2xl font-bold cursor-pointer tracking-tight"
                 @click="$emit('back')"
             >
-                我的旅程
+                Maplio
             </h1>
+
+            <select
+                :value="currentTheme"
+                @change="$emit('update-theme', $event.target.value)"
+                class="bg-transparent border border-current opacity-40 rounded px-2 py-1 text-[10px] outline-none cursor-pointer hover:opacity-100 transition-opacity"
+            >
+                <option
+                    v-for="(t, key) in themeOptions"
+                    :key="key"
+                    :value="key"
+                    class="text-stone-800"
+                >
+                    {{ t.name }}
+                </option>
+            </select>
+
             <span
                 v-if="isDemo"
                 class="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black uppercase"
+                >Demo Mode</span
             >
-                Demo Mode
-            </span>
-            <span v-if="currentTrip" class="hidden md:block text-slate-700">/</span>
+            <span v-if="currentTrip" class="hidden md:block opacity-20">/</span>
             <span
                 v-if="currentTrip"
-                class="hidden md:block text-slate-400 font-bold truncate max-w-[200px]"
+                class="hidden md:block font-bold truncate max-w-[200px] opacity-60"
                 >{{ currentTrip.name }}</span
             >
         </div>
+
         <div class="flex items-center gap-3 md:gap-4">
             <button
                 @click="$emit('logout')"
-                class="text-slate-500 hover:text-red-400 transition-colors px-2"
-                title="登出並重置"
+                class="opacity-40 hover:opacity-100 hover:text-red-400 transition-all px-2"
+                title="登出"
             >
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
             <button
                 v-if="showAddButton"
                 @click="$emit('create')"
-                class="px-4 py-2 bg-blue-600 rounded-xl text-white font-bold text-xs md:text-sm shadow-lg shadow-blue-600/30 hover:scale-105 transition-transform"
+                :class="[
+                    'px-4 py-2 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg hover:scale-105 transition-all',
+                    currentTheme === 'muji'
+                        ? 'bg-stone-800 shadow-stone-800/20'
+                        : 'bg-blue-600 shadow-blue-600/30'
+                ]"
             >
                 <i class="fa-solid fa-plus mr-1"></i> 新增旅程
             </button>
@@ -42,12 +66,11 @@
 </template>
 
 <script>
+import { themes } from '../../utils/themeUtils'
 export default {
-    props: {
-        user: Object,
-        currentTrip: Object,
-        isDemo: Boolean,
-        showAddButton: Boolean
+    props: ['user', 'currentTrip', 'isDemo', 'showAddButton', 'currentTheme', 'themeClass'],
+    data() {
+        return { themeOptions: themes }
     }
 }
 </script>

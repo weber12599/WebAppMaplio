@@ -5,6 +5,7 @@
 <script>
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { themes } from '../../utils/themeUtils'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -17,14 +18,11 @@ export default {
     name: 'LeafletMap',
     props: {
         spots: { type: Array, default: () => [] },
-        mapId: { type: String, required: true }
+        mapId: { type: String, required: true },
+        currentTheme: String
     },
     data() {
-        return {
-            map: null,
-            markers: [],
-            resizeTimer: null
-        }
+        return { map: null, markers: [], tileLayer: null }
     },
     watch: {
         spots: {
@@ -32,58 +30,50 @@ export default {
             handler() {
                 this.renderMarkers()
             }
+        },
+        currentTheme(newTheme) {
+            this.updateTileLayer(newTheme)
         }
     },
     mounted() {
         this.initMap()
-        window.addEventListener('resize', this.handleResize)
     },
     beforeUnmount() {
-        window.removeEventListener('resize', this.handleResize)
         if (this.map) this.map.remove()
     },
     methods: {
         initMap() {
             this.$nextTick(() => {
                 if (this.map) return
-
                 this.map = L.map(this.mapId, {
                     zoomControl: false,
-                    attributionControl: false,
-                    preferCanvas: true,
                     tap: false,
-                    fadeAnimation: true,
-                    zoomAnimation: true
+                    fadeAnimation: true
                 }).setView([25.03, 121.56], 13)
-
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    updateWhenIdle: true,
-                    keepBuffer: 2
-                }).addTo(this.map)
-
-                this.map.whenReady(() => {
-                    // 監聽容器變動，一旦從隱藏變顯示就自動重繪
-                    const ro = new ResizeObserver(() => {
-                        if (this.map) this.map.invalidateSize()
-                    })
-                    ro.observe(this.$el)
-                    this.renderMarkers()
+                this.updateTileLayer(this.currentTheme)
+                const ro = new ResizeObserver(() => {
+                    if (this.map) this.map.invalidateSize()
                 })
+                ro.observe(this.$el)
+                this.map.whenReady(() => this.renderMarkers())
             })
         },
-
+        updateTileLayer(themeKey) {
+            if (!this.map) return
+            if (this.tileLayer) this.map.removeLayer(this.tileLayer)
+            const tileUrl = themes[themeKey]?.mapTile || themes.dark.mapTile
+            this.tileLayer = L.tileLayer(tileUrl, { updateWhenIdle: true, keepBuffer: 2 }).addTo(
+                this.map
+            )
+        },
         renderMarkers() {
             if (!this.map) return
-
             this.markers.forEach((m) => this.map.removeLayer(m))
             this.markers = []
-
             const latlngs = []
             this.spots.forEach((s) => {
                 const lat = parseFloat(s.lat)
                 const lng = parseFloat(s.lng)
-
-                // 修正：必須座標有效且 showOnMap 不為 false 才渲染
                 if (!isNaN(lat) && !isNaN(lng) && s.showOnMap !== false) {
                     const m = L.marker([lat, lng])
                         .addTo(this.map)
@@ -92,30 +82,13 @@ export default {
                     latlngs.push([lat, lng])
                 }
             })
-
-            if (latlngs.length > 0) {
-                // 修正：檢查容器尺寸，若寬高為 0 則不執行 flyToBounds 以防止 NaN 錯誤
-                const size = this.map.getSize()
-                if (size.x > 0 && size.y > 0) {
-                    const isMobile = window.innerWidth < 768
-                    try {
-                        this.map.flyToBounds(L.latLngBounds(latlngs), {
-                            padding: isMobile ? [30, 30] : [60, 60],
-                            duration: 0.6,
-                            maxZoom: 15
-                        })
-                    } catch (e) {
-                        console.warn('Map animation error ignored:', e)
-                    }
-                }
+            if (latlngs.length > 0 && this.map.getSize().x > 0) {
+                this.map.flyToBounds(L.latLngBounds(latlngs), {
+                    padding: [30, 30],
+                    duration: 0.6,
+                    maxZoom: 15
+                })
             }
-        },
-
-        handleResize() {
-            clearTimeout(this.resizeTimer)
-            this.resizeTimer = setTimeout(() => {
-                if (this.map) this.map.invalidateSize({ animate: true })
-            }, 250)
         }
     }
 }
