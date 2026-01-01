@@ -4,6 +4,7 @@
             'p-4 md:p-6 md:px-10 flex justify-between items-center z-30 shrink-0 border-b transition-colors duration-500',
             themeClass
         ]"
+        :style="{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }"
     >
         <div class="flex items-center gap-4">
             <h1

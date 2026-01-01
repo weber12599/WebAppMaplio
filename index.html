@@ -33,8 +33,18 @@
                 color: #f1f5f9;
                 /* 禁止 body 整體捲動，交由內部的 aside 或 main 處理 */
                 overflow: hidden;
-                /* 適配 iPhone 底部安全區域 (Home Bar) */
+
+                /* 核心調整：確保內容不被動態島、瀏海或底部署條遮擋 */
+                padding-top: env(safe-area-inset-top);
                 padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+
+                /* 修正高度：確保在使用安全區域內距時，body 仍維持 100% 視窗高度 */
+                height: 100vh;
+                height: 100dvh; /* 動態視窗高度，更精確適配行動瀏覽器 */
+                box-sizing: border-box;
+
                 -webkit-font-smoothing: antialiased;
                 -moz-osx-font-smoothing: grayscale;
             }

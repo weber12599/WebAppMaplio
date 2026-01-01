@@ -1,7 +1,7 @@
 <template>
     <div
         :class="[
-            'font-sans h-screen flex flex-col overflow-hidden selection:bg-blue-500/30 transition-colors duration-500',
+            'font-sans h-dvh flex flex-col overflow-hidden selection:bg-blue-500/30 transition-colors duration-500',
             activeThemeConfig.appClass
         ]"
     >
@@ -27,7 +27,13 @@
                 @update-theme="activeTheme = $event"
             />
 
-            <main class="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+            <main
+                class="flex-grow flex flex-col md:flex-row overflow-hidden relative"
+                style="
+                    padding-left: env(safe-area-inset-left);
+                    padding-right: env(safe-area-inset-right);
+                "
+            >
                 <div v-if="!currentTrip" class="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar">
                     <div
                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto"
