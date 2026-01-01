@@ -23,16 +23,6 @@
                             class="w-4 h-4 rounded border-stone-300 bg-white text-stone-800 focus:ring-stone-500 disabled:opacity-20 cursor-pointer"
                         />
 
-                        <span
-                            v-if="spot.timeStart"
-                            :class="[
-                                'text-[9px] px-2 py-0.5 rounded-md font-bold italic',
-                                themeConfig.badgeClass
-                            ]"
-                        >
-                            {{ spot.timeStart }} - {{ spot.timeEnd }}
-                        </span>
-
                         <div class="flex items-center gap-2 truncate">
                             <p class="font-bold opacity-90 tracking-tight truncate">
                                 {{ spot.name || '未命名景點' }}
@@ -56,13 +46,35 @@
                         </div>
 
                         <button
+                            @click="$emit('copy', spot)"
+                            class="opacity-30 hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center"
+                            title="複製此景點到其他天"
+                        >
+                            <i class="fa-regular fa-copy text-[11px]"></i>
+                        </button>
+
+                        <button
                             @click="$emit('edit', spot)"
                             class="opacity-30 hover:opacity-100 transition-opacity"
+                            title="編輯"
                         >
                             <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                         </button>
                     </div>
-                    <p v-if="spot.notes" class="text-xs opacity-50 mt-2 leading-relaxed italic">
+
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span
+                            v-if="spot.timeStart"
+                            :class="[
+                                'text-[9px] px-2 py-0.5 rounded-md font-bold italic',
+                                themeConfig.badgeClass
+                            ]"
+                        >
+                            {{ spot.timeStart }} - {{ spot.timeEnd }}
+                        </span>
+                    </div>
+
+                    <p v-if="spot.notes" class="text-xs opacity-50 mt-2 leading-relaxed">
                         {{ spot.notes }}
                     </p>
                 </div>

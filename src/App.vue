@@ -99,6 +99,7 @@
                                         :isLast="index === currentDaySpots.length - 1"
                                         :themeConfig="activeThemeConfig"
                                         @edit="startEditSpot"
+                                        @copy="initiateCopySpot"
                                         @remove="handleRemoveSpot(index)"
                                         @open-map="openSpotOnMaps"
                                         @update-data="saveData"
@@ -177,6 +178,15 @@
                     @cancel="showShareDialog = false"
                     @choice="handleShareChoice"
                 />
+
+                <CopySpotDialog
+                    :isOpen="showCopyDialog"
+                    :totalDays="currentTrip?.itinerary.length || 0"
+                    :currentDay="activeDay"
+                    :themeConfig="activeThemeConfig"
+                    @close="showCopyDialog = false"
+                    @confirm="executeCopySpot"
+                />
             </main>
         </div>
     </div>
@@ -207,6 +217,7 @@ import SearchBar from './components/Planner/SearchBar.vue'
 import LeafletMap from './components/Map/LeafletMap.vue'
 import TransportDialog from './components/Planner/TransportDialog.vue'
 import ShareDialog from './components/Trip/ShareDialog.vue'
+import CopySpotDialog from './components/Planner/CopySpotDialog.vue'
 
 export default {
     components: {
@@ -221,7 +232,8 @@ export default {
         SearchBar,
         LeafletMap,
         TransportDialog,
-        ShareDialog
+        ShareDialog,
+        CopySpotDialog
     },
     data() {
         return {
@@ -239,6 +251,8 @@ export default {
             showTransportDialog: false,
             editingTransportSpot: null,
             showShareDialog: false,
+            showCopyDialog: false,
+            spotToCopy: null,
             activeTheme: localStorage.getItem('maplio_theme') || 'dark',
             appVersion: import.meta.env.VITE_APP_VERSION || 'v0.0.0'
         }
@@ -622,7 +636,6 @@ export default {
             this.showTransportDialog = true
         },
         updateTransportInfo(updatedSpotData) {
-            // 找到該景點並更新其交通屬性
             const idx = this.currentDaySpots.findIndex((s) => s.id === updatedSpotData.id)
             if (idx !== -1) {
                 this.currentDaySpots[idx] = { ...updatedSpotData }
@@ -630,6 +643,33 @@ export default {
             }
             this.showTransportDialog = false
             this.editingTransportSpot = null
+        },
+        initiateCopySpot(spot) {
+            this.spotToCopy = spot
+            this.showCopyDialog = true
+        },
+        async executeCopySpot(targetDayIndexes) {
+            if (!this.spotToCopy || !this.currentTrip) return
+
+            try {
+                targetDayIndexes.forEach((dayIdx) => {
+                    const newSpot = JSON.parse(JSON.stringify(this.spotToCopy))
+                    newSpot.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
+                    if (!this.currentTrip.itinerary[dayIdx]) {
+                        this.currentTrip.itinerary[dayIdx] = { spots: [] }
+                    }
+                    this.currentTrip.itinerary[dayIdx].spots.push(newSpot)
+                })
+
+                await this.saveData()
+                alert(`成功複製景點到 ${targetDayIndexes.length} 個日期！`)
+            } catch (error) {
+                console.error('複製失敗', error)
+                alert('複製失敗，請稍後再試')
+            } finally {
+                this.showCopyDialog = false
+                this.spotToCopy = null
+            }
         }
     }
 }
