@@ -25,6 +25,7 @@
                 @back="backToList"
                 @create="showCreateForm = true"
                 @update-theme="activeTheme = $event"
+                @import="handleImportTrip"
                 @share="handleShareTrip"
             />
 
@@ -354,21 +355,102 @@ export default {
                 this.saveData()
             }
         },
-        async handleShareTrip() {
-            const shareUrl = window.location.href
+        async copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text)
+                    return true
+                } catch (err) {
+                    console.error('Clipboard API 失敗', err)
+                }
+            }
+
+            const textArea = document.createElement('textarea')
+            textArea.value = text
+
+            textArea.style.position = 'fixed'
+            textArea.style.left = '-9999px'
+            textArea.style.top = '0'
+            document.body.appendChild(textArea)
+
+            textArea.focus()
+            textArea.select()
 
             try {
-                if (navigator.share) {
-                    await navigator.share({
-                        title: `Maplio 旅程: ${this.currentTrip.name}`,
-                        url: shareUrl
-                    })
+                const successful = document.execCommand('copy')
+                document.body.removeChild(textArea)
+                return successful
+            } catch (err) {
+                console.error(err)
+                document.body.removeChild(textArea)
+                return false
+            }
+        },
+        async handleImportTrip() {
+            try {
+                let text = ''
+                if (navigator.clipboard && window.isSecureContext) {
+                    text = await navigator.clipboard.readText()
                 } else {
-                    await navigator.clipboard.writeText(shareUrl)
-                    alert('旅程連結已複製！您可以將其傳送給已加入成員名單的使用者。')
+                    text = prompt('您的瀏覽器不支援直接讀取剪貼簿，請在此貼上行程 JSON：')
+                }
+
+                if (!text) return
+
+                const importedData = JSON.parse(text)
+
+                if (!importedData.name || !Array.isArray(importedData.itinerary)) {
+                    throw new Error('無效的行程格式：缺少名稱或行程清單')
+                }
+
+                const newTrip = {
+                    ...importedData,
+                    id: 'imp_' + Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    createdAt: new Date().toISOString(),
+                    members: this.isDemoMode ? ['demo-user'] : [this.user.uid]
+                }
+
+                if (this.isDemoMode) {
+                    this.trips.unshift(newTrip)
+                    localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
+                    alert(`成功匯入行程：${newTrip.name}`)
+                } else {
+                    await saveTripData(newTrip.id, newTrip)
+                    alert(`行程「${newTrip.name}」已同步至雲端！`)
                 }
             } catch (err) {
-                console.error('分享失敗', err)
+                console.error('匯入失敗:', err)
+                let errorMsg = '匯入失敗，請確認剪貼簿內容是否為正確的 JSON 格式。'
+                if (err.name === 'NotAllowedError') errorMsg = '請授權瀏覽器讀取剪貼簿權限。'
+                alert(errorMsg)
+            }
+        },
+        async handleShareTrip() {
+            if (!this.currentTrip) return
+
+            const isDemo = this.isDemoMode
+            const content = isDemo
+                ? JSON.stringify(this.currentTrip, null, 2)
+                : window.location.href
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Maplio ${isDemo ? '行程數據' : '旅程分享'}: ${this.currentTrip.name}`,
+                        [isDemo ? 'text' : 'url']: content
+                    })
+                    return
+                } catch (err) {
+                    if (err.name === 'AbortError') return
+                    console.warn('原生分享失敗，轉用剪貼簿', err)
+                }
+            }
+
+            const success = await this.copyToClipboard(content)
+            if (success) {
+                alert(isDemo ? '行程 JSON 已複製到剪貼簿！' : '旅程連結已複製！')
+            } else {
+                alert('複製失敗')
             }
         },
         handleSearch(query) {

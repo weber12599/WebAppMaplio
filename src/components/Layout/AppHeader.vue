@@ -52,6 +52,15 @@
             </button>
 
             <button
+                v-if="!currentTrip"
+                @click="$emit('import')"
+                class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
+                title="從剪貼簿匯入 JSON"
+            >
+                <i class="fa-solid fa-file-import"></i>
+            </button>
+
+            <button
                 v-if="currentTrip"
                 @click="$emit('share')"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
@@ -75,6 +84,7 @@
 <script>
 import { themes } from '../../utils/themeUtils'
 export default {
+    emits: ['back', 'update-theme', 'logout', 'import', 'share', 'create'],
     props: ['user', 'currentTrip', 'isDemo', 'showAddButton', 'currentTheme', 'themeClass'],
     data() {
         return { themeOptions: themes }
