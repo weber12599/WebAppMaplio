@@ -25,6 +25,7 @@
                 @back="backToList"
                 @create="showCreateForm = true"
                 @update-theme="activeTheme = $event"
+                @share="handleShareTrip"
             />
 
             <main
@@ -226,6 +227,24 @@ export default {
             },
             immediate: true,
             deep: false
+        },
+        trips: {
+            handler() {
+                this.checkRouteParam()
+            },
+            immediate: true,
+            deep: false
+        },
+        '$route.params.id': {
+            handler(newId) {
+                if (!newId) {
+                    this.currentTrip = null
+                } else {
+                    this.checkRouteParam()
+                }
+            },
+            immediate: true,
+            deep: false
         }
     },
     mounted() {
@@ -247,6 +266,15 @@ export default {
             const activeClasses = this.activeThemeConfig.appClass.split(' ')
             body.classList.add(...activeClasses)
             body.classList.add('transition-colors', 'duration-500')
+        },
+        checkRouteParam() {
+            const tripId = this.$route.params.id
+            if (tripId && this.trips.length > 0) {
+                const trip = this.trips.find((t) => t.id === tripId)
+                if (trip) {
+                    this.currentTrip = trip
+                }
+            }
         },
         async handleGoogleLogin() {
             try {
@@ -270,10 +298,11 @@ export default {
         selectTrip(trip) {
             this.currentTrip = trip
             this.activeDay = 0
+            this.$router.push({ name: 'trip', params: { id: trip.id } })
         },
         backToList() {
             this.currentTrip = null
-            window.history.pushState({}, '', window.location.pathname)
+            this.$router.push('/')
         },
         async handleDeleteTrip(id) {
             if (confirm('確定刪除整份行程？')) {
@@ -301,6 +330,23 @@ export default {
                 this.currentTrip.itinerary.splice(this.activeDay, 1)
                 this.activeDay = Math.max(0, this.activeDay - 1)
                 this.saveData()
+            }
+        },
+        async handleShareTrip() {
+            const shareUrl = window.location.href
+
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: `Maplio 旅程: ${this.currentTrip.name}`,
+                        url: shareUrl
+                    })
+                } else {
+                    await navigator.clipboard.writeText(shareUrl)
+                    alert('旅程連結已複製！您可以將其傳送給已加入成員名單的使用者。')
+                }
+            } catch (err) {
+                console.error('分享失敗', err)
             }
         },
         handleSearch(query) {

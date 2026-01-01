@@ -50,17 +50,23 @@
             >
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
+
+            <button
+                v-if="currentTrip"
+                @click="$emit('share')"
+                class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
+                title="分享旅程"
+            >
+                <i class="fa-solid fa-share-nodes"></i>
+            </button>
+
             <button
                 v-if="showAddButton"
                 @click="$emit('create')"
-                :class="[
-                    'px-4 py-2 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg hover:scale-105 transition-all',
-                    currentTheme === 'muji'
-                        ? 'bg-stone-800 shadow-stone-800/20'
-                        : 'bg-blue-600 shadow-blue-600/30'
-                ]"
+                class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
+                title="新增旅程"
             >
-                <i class="fa-solid fa-plus mr-1"></i> 新增旅程
+                <i class="fa-solid fa-plus mr-1"></i>
             </button>
         </div>
     </header>
