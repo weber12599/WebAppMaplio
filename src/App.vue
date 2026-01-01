@@ -115,6 +115,24 @@
                             >
                                 <p class="text-sm font-bold">今天還沒安排行程，試試搜尋景點吧！</p>
                             </div>
+
+                            <div
+                                v-if="currentTrip && currentTrip.itinerary.length > 1"
+                                class="flex justify-center pt-8"
+                            >
+                                <button
+                                    @click="handleDeleteDay"
+                                    :class="[
+                                        'text-xs font-bold transition-all flex items-center gap-2 py-2 px-4 rounded-xl border opacity-40 hover:opacity-100',
+                                        activeTheme === 'muji'
+                                            ? 'border-stone-200 text-stone-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50'
+                                            : 'border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/10'
+                                    ]"
+                                >
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    刪除 Day {{ activeDay + 1 }} 整天行程
+                                </button>
+                            </div>
                         </div>
                     </aside>
                     <LeafletMap
@@ -316,6 +334,10 @@ export default {
         },
         handleTripCreated() {
             this.showCreateForm = false
+            if (this.isDemoMode) {
+                const data = localStorage.getItem('maplio_demo_data')
+                this.trips = data ? JSON.parse(data) : []
+            }
         },
         handleAddDay() {
             this.currentTrip.itinerary.push({ spots: [] })
