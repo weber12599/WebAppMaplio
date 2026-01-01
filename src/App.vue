@@ -168,6 +168,13 @@
                     @cancel="showTransportDialog = false"
                     @confirm="updateTransportInfo"
                 />
+
+                <ShareDialog
+                    v-if="showShareDialog"
+                    :themeConfig="activeThemeConfig"
+                    @cancel="showShareDialog = false"
+                    @choice="handleShareChoice"
+                />
             </main>
         </div>
     </div>
@@ -191,6 +198,7 @@ import DayTabs from './components/Planner/DayTabs.vue'
 import SearchBar from './components/Planner/SearchBar.vue'
 import LeafletMap from './components/Map/LeafletMap.vue'
 import TransportDialog from './components/Planner/TransportDialog.vue'
+import ShareDialog from './components/Trip/ShareDialog.vue'
 
 export default {
     components: {
@@ -204,7 +212,8 @@ export default {
         DayTabs,
         SearchBar,
         LeafletMap,
-        TransportDialog
+        TransportDialog,
+        ShareDialog
     },
     data() {
         return {
@@ -221,6 +230,7 @@ export default {
             isEditingExistingSpot: false,
             showTransportDialog: false,
             editingTransportSpot: null,
+            showShareDialog: false,
             activeTheme: localStorage.getItem('maplio_theme') || 'dark',
             appVersion: import.meta.env.VITE_APP_VERSION || 'v1.2.0'
         }
@@ -428,16 +438,32 @@ export default {
         async handleShareTrip() {
             if (!this.currentTrip) return
 
-            const isDemo = this.isDemoMode
-            const content = isDemo
-                ? JSON.stringify(this.currentTrip, null, 2)
-                : window.location.href
+            if (this.isDemoMode) {
+                const tripJson = JSON.stringify(this.currentTrip, null, 2)
+                await this.executeShare('行程 JSON 資料', tripJson, true)
+            } else {
+                this.showShareDialog = true
+            }
+        },
+        async handleShareChoice(choice) {
+            this.showShareDialog = false
+
+            if (choice === 'url') {
+                const shareUrl = window.location.href
+                await this.executeShare('旅程連結', shareUrl, false)
+            } else if (choice === 'json') {
+                const tripJson = JSON.stringify(this.currentTrip, null, 2)
+                await this.executeShare('行程 JSON 資料', tripJson, true)
+            }
+        },
+        async executeShare(label, content, isText) {
+            const title = `Maplio ${label}: ${this.currentTrip.name}`
 
             if (navigator.share) {
                 try {
                     await navigator.share({
-                        title: `Maplio ${isDemo ? '行程數據' : '旅程分享'}: ${this.currentTrip.name}`,
-                        [isDemo ? 'text' : 'url']: content
+                        title: title,
+                        [isText ? 'text' : 'url']: content
                     })
                     return
                 } catch (err) {
@@ -445,12 +471,11 @@ export default {
                     console.warn('原生分享失敗，轉用剪貼簿', err)
                 }
             }
-
             const success = await this.copyToClipboard(content)
             if (success) {
-                alert(isDemo ? '行程 JSON 已複製到剪貼簿！' : '旅程連結已複製！')
+                alert(`${label} 已複製到剪貼簿！`)
             } else {
-                alert('複製失敗')
+                alert('複製失敗!')
             }
         },
         handleSearch(query) {
