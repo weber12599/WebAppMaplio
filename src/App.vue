@@ -94,6 +94,7 @@
                                 <template #item="{ element, index }">
                                     <SpotItem
                                         :spot="element"
+                                        :nextSpot="currentDaySpots[index + 1]"
                                         :isLast="index === currentDaySpots.length - 1"
                                         :themeConfig="activeThemeConfig"
                                         @edit="startEditSpot"

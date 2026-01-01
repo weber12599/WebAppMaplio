@@ -118,11 +118,17 @@
                 </div>
 
                 <button
-                    @click="$emit('navigate')"
+                    v-if="!isLast"
+                    :disabled="!canNavigate"
+                    @click="canNavigate && $emit('navigate')"
                     :class="[
-                        'w-9 h-9 flex items-center justify-center rounded-full border transition-all shadow-sm',
-                        themeConfig.navBtnClass
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                        themeConfig.navBtnClass,
+                        !canNavigate
+                            ? 'opacity-20 cursor-not-allowed grayscale'
+                            : 'hover:scale-110 active:scale-90'
                     ]"
+                    :title="canNavigate ? '開啟導航' : '缺少經緯度，無法導航'"
                 >
                     <i class="fa-solid fa-route text-xs"></i>
                 </button>
@@ -136,8 +142,17 @@
 export default {
     props: {
         spot: Object,
+        nextSpot: Object,
         isLast: Boolean,
         themeConfig: Object
+    },
+    computed: {
+        canNavigate() {
+            if (this.isLast || !this.nextSpot) return false
+            const hasStartCoord = this.spot.lat && this.spot.lng
+            const hasEndCoord = this.nextSpot.lat && this.nextSpot.lng
+            return hasStartCoord && hasEndCoord
+        }
     }
 }
 </script>
