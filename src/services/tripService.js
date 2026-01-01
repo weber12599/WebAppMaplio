@@ -7,7 +7,10 @@ import {
     onSnapshot,
     doc,
     setDoc,
-    deleteDoc
+    deleteDoc,
+    getDoc,
+    updateDoc,
+    arrayUnion
 } from 'firebase/firestore'
 
 export const subscribeTrips = (userId, callback) => {
@@ -27,4 +30,17 @@ export const saveTripData = async (tripId, data) => {
 
 export const deleteTripDoc = async (tripId) => {
     await deleteDoc(doc(db, 'trips', tripId))
+}
+
+export const getTripDoc = async (tripId) => {
+    const docRef = doc(db, 'trips', tripId)
+    const docSnap = await getDoc(docRef)
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null
+}
+
+export const joinTrip = async (tripId, userId) => {
+    const docRef = doc(db, 'trips', tripId)
+    await updateDoc(docRef, {
+        members: arrayUnion(userId)
+    })
 }

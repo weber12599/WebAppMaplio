@@ -186,7 +186,13 @@
 import draggable from 'vuedraggable'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
-import { subscribeTrips, saveTripData, deleteTripDoc } from './services/tripService'
+import {
+    subscribeTrips,
+    saveTripData,
+    deleteTripDoc,
+    getTripDoc,
+    joinTrip
+} from './services/tripService'
 import { parseGoogleMapUrl, getNavUrl } from './utils/mapUtils'
 import { themes } from './utils/themeUtils'
 
@@ -266,12 +272,19 @@ export default {
             immediate: true,
             deep: false
         },
+        user: {
+            handler(newUser) {
+                if (newUser && this.$route.params.id) {
+                    this.handleAutoJoin(this.$route.params.id)
+                }
+            }
+        },
         '$route.params.id': {
             handler(newId) {
                 if (!newId) {
                     this.currentTrip = null
                 } else {
-                    this.checkRouteParam()
+                    this.handleAutoJoin(newId)
                 }
             },
             immediate: true,
@@ -297,6 +310,25 @@ export default {
             const activeClasses = this.activeThemeConfig.appClass.split(' ')
             body.classList.add(...activeClasses)
             body.classList.add('transition-colors', 'duration-500')
+        },
+        async handleAutoJoin(tripId) {
+            if (this.isDemoMode || !this.user) {
+                this.checkRouteParam()
+                return
+            }
+
+            try {
+                const trip = await getTripDoc(tripId)
+                if (trip) {
+                    if (!trip.members.includes(this.user.uid)) {
+                        await joinTrip(tripId, this.user.uid)
+                        console.log('已自動加入行程成員')
+                    }
+                }
+            } catch (err) {
+                console.error('自動加入行程失敗:', err)
+            }
+            this.checkRouteParam()
         },
         checkRouteParam() {
             const tripId = this.$route.params.id
