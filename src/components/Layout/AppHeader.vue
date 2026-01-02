@@ -8,9 +8,8 @@
     >
         <div class="flex items-center gap-4">
             <h1
-                class="text-xl md:text-2xl font-bold cursor-pointer tracking-tight"
+                class="text-xl md:text-2xl font-bold cursor-pointer tracking-tight select-none"
                 @click="$emit('back')"
-                @contextmenu.prevent="showVersionInfo"
             >
                 Maplio
             </h1>
@@ -39,6 +38,14 @@
         </div>
 
         <div class="flex items-center gap-3 md:gap-4">
+            <button
+                @click="showVersionInfo"
+                class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
+                title="關於 Maplio"
+            >
+                <i class="fa-solid fa-circle-info"></i>
+            </button>
+
             <button
                 @click="$emit('logout')"
                 class="opacity-40 hover:opacity-100 hover:text-red-400 transition-all px-2"
