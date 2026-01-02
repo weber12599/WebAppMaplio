@@ -22,7 +22,9 @@ export default {
         currentTheme: String
     },
     data() {
-        return {}
+        return {
+            hasFittedBounds: false
+        }
     },
     created() {
         this.map = null
@@ -33,6 +35,7 @@ export default {
         spots: {
             deep: true,
             handler() {
+                this.hasFittedBounds = false
                 this.renderMarkers()
             }
         },
@@ -45,7 +48,7 @@ export default {
     },
     beforeUnmount() {
         if (this.map) {
-            this.markers.forEach((m) => m.remove()) // 確保標記與 Tooltip 被移除
+            this.markers.forEach((m) => m.remove())
             this.map.remove()
             this.map = null
         }
@@ -60,8 +63,14 @@ export default {
                     fadeAnimation: true
                 }).setView([25.03, 121.56], 13)
                 this.updateTileLayer(this.currentTheme)
+
                 const ro = new ResizeObserver(() => {
-                    if (this.map) this.map.invalidateSize()
+                    if (this.map) {
+                        this.map.invalidateSize()
+                        if (!this.hasFittedBounds) {
+                            this.adjustMapBounds()
+                        }
+                    }
                 })
                 ro.observe(this.$el)
                 this.map.whenReady(() => this.renderMarkers())
@@ -79,7 +88,7 @@ export default {
             if (!this.map) return
             this.markers.forEach((m) => this.map.removeLayer(m))
             this.markers = []
-            const latlngs = []
+
             this.spots.forEach((s, index) => {
                 const lat = parseFloat(s.lat)
                 const lng = parseFloat(s.lng)
@@ -117,15 +126,21 @@ export default {
                         })
 
                     this.markers.push(m)
-                    latlngs.push([lat, lng])
                 }
             })
-            if (latlngs.length > 0 && this.map.getSize().x > 0) {
-                this.map.flyToBounds(L.latLngBounds(latlngs), {
+            this.adjustMapBounds()
+        },
+        adjustMapBounds() {
+            if (!this.map || this.markers.length === 0) return
+
+            if (this.map.getSize().x > 0) {
+                const group = L.featureGroup(this.markers)
+                this.map.flyToBounds(group.getBounds(), {
                     padding: [30, 30],
                     duration: 0.6,
                     maxZoom: 15
                 })
+                this.hasFittedBounds = true
             }
         }
     }
