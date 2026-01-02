@@ -71,13 +71,42 @@ export default {
             this.markers.forEach((m) => this.map.removeLayer(m))
             this.markers = []
             const latlngs = []
-            this.spots.forEach((s) => {
+            this.spots.forEach((s, index) => {
                 const lat = parseFloat(s.lat)
                 const lng = parseFloat(s.lng)
                 if (!isNaN(lat) && !isNaN(lng) && s.showOnMap !== false) {
-                    const m = L.marker([lat, lng])
+                    const numberIcon = L.divIcon({
+                        className: 'map-marker-icon',
+                        html: `
+                            <div style="
+                                background-color: #3b82f6;
+                                color: white;
+                                border: 2px solid white;
+                                border-radius: 50%;
+                                width: 24px;
+                                height: 24px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: bold;
+                                font-size: 14px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+                            ">
+                                ${index + 1}
+                            </div>
+                        `,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12],
+                        popupAnchor: [0, -12]
+                    })
+                    const m = L.marker([lat, lng], { icon: numberIcon })
                         .addTo(this.map)
-                        .bindPopup(`<b style="color:#1e1b4b">${s.name}</b>`)
+                        .bindTooltip(s.name, {
+                            offset: [0, -20],
+                            direction: 'top',
+                            opacity: 0.9
+                        })
+
                     this.markers.push(m)
                     latlngs.push([lat, lng])
                 }
