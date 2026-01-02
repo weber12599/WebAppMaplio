@@ -74,9 +74,26 @@
                         </span>
                     </div>
 
-                    <p v-if="spot.notes" class="text-xs opacity-50 mt-2 leading-relaxed">
-                        {{ spot.notes }}
-                    </p>
+                    <div v-if="spot.notes" class="w-full mt-2">
+                        <div v-for="(note, index) in spot.notes.split('\n')" :key="index">
+                            <a
+                                v-if="note.startsWith('http')"
+                                class="text-xs opacity-50 leading-relaxed overflow-hidden text-ellipsis block hover:underline hover:opacity-100"
+                                :href="note"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                @click.stop
+                            >
+                                {{ note }}
+                            </a>
+                            <div
+                                v-else
+                                class="text-xs opacity-50 leading-relaxed overflow-hidden text-ellipsis"
+                            >
+                                {{ note }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-3">
