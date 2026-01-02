@@ -64,7 +64,7 @@
 
                     <div class="flex items-center gap-2 flex-wrap">
                         <span
-                            v-if="spot.timeStart"
+                            v-if="spot.timeStart || spot.timeEnd"
                             :class="[
                                 'text-[9px] px-2 py-0.5 rounded-md font-bold italic',
                                 themeConfig.badgeClass
@@ -134,15 +134,54 @@
                     <option value="walking">🚶 徒步前往</option>
                 </select>
 
-                <div class="flex-grow text-center overflow-hidden">
+                <div class="flex-grow overflow-hidden">
                     <div
                         @click="$emit('edit-transport', spot)"
-                        class="text-[10px] opacity-50 hover:opacity-100 cursor-pointer py-1 truncate transition-opacity"
+                        class="flex-col justify-start font-bold text-[10px] opacity-50 hover:opacity-100 cursor-pointer py-1 truncate transition-opacity"
                     >
-                        <span v-if="spot.transStart" class="font-bold mr-2 italic opacity-80">
-                            {{ spot.transStart }}-{{ spot.transEnd }}
-                        </span>
-                        {{ spot.transportNotes || '＋ 交通備註與時間' }}
+                        <div v-if="spot.transStart || spot.transEnd">
+                            <div>
+                                <div
+                                    class="opacity-80 leading-relaxed overflow-hidden text-ellipsis"
+                                >
+                                    {{ spot.transStart }}-{{ spot.transEnd }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="spot.transportNotes">
+                            <div
+                                v-for="(note, index) in spot.transportNotes.split('\n')"
+                                :key="index"
+                            >
+                                <a
+                                    v-if="note.startsWith('http')"
+                                    class="opacity-80 leading-relaxed overflow-hidden text-ellipsis block hover:underline hover:opacity-100"
+                                    :href="note"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    @click.stop
+                                >
+                                    {{ note }}
+                                </a>
+                                <div
+                                    v-else
+                                    class="opacity-80 leading-relaxed overflow-hidden text-ellipsis"
+                                >
+                                    {{ note }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="!spot.transportNotes && !spot.transStart && !spot.transEnd">
+                            <div>
+                                <div
+                                    class="opacity-80 italic leading-relaxed overflow-hidden text-ellipsis"
+                                >
+                                    ＋ 交通備註與時間
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
