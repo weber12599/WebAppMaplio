@@ -6,26 +6,26 @@
         ]"
     >
         <LoginScreen
-            v-if="!user"
+            v-if="!authStore.user"
             :themeConfig="activeThemeConfig"
-            @login="handleGoogleLogin"
-            @demo="enterDemoMode"
+            @login="authStore.loginGoogle"
+            @demo="authStore.enterDemoMode"
             :appVersion="appVersion"
         />
 
         <div v-else class="flex flex-col h-full overflow-hidden">
             <AppHeader
-                :user="user"
-                :currentTrip="currentTrip"
-                :isDemo="isDemoMode"
-                :showAddButton="!currentTrip && !showCreateForm"
-                :currentTheme="activeTheme"
+                :user="authStore.user"
+                :currentTrip="tripStore.currentTrip"
+                :isDemo="authStore.isDemoMode"
+                :showAddButton="!tripStore.currentTrip && !showCreateForm"
+                :currentTheme="themeStore.activeTheme"
                 :themeClass="activeThemeConfig.headerClass"
                 :appVersion="appVersion"
-                @logout="logout"
+                @logout="authStore.logout"
                 @back="backToList"
                 @create="showCreateForm = true"
-                @update-theme="activeTheme = $event"
+                @update-theme="themeStore.setTheme"
                 @import="handleImportTrip"
                 @share="handleShareTrip"
             />
@@ -37,17 +37,20 @@
                     padding-right: env(safe-area-inset-right);
                 "
             >
-                <div v-if="!currentTrip" class="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar">
+                <div
+                    v-if="!tripStore.currentTrip"
+                    class="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar"
+                >
                     <div
                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto"
                     >
                         <TripCard
-                            v-for="trip in trips"
+                            v-for="trip in tripStore.trips"
                             :key="trip.id"
                             :trip="trip"
                             :themeConfig="activeThemeConfig"
-                            @select="selectTrip"
-                            @delete="handleDeleteTrip"
+                            @select="handleSelectTrip"
+                            @delete="tripStore.deleteTrip"
                         />
                     </div>
                 </div>
@@ -64,18 +67,20 @@
                         >
                             <LeafletMap
                                 mapId="mobile-map"
-                                :spots="currentDaySpots"
-                                :currentTheme="activeTheme"
+                                :spots="tripStore.currentDaySpots"
+                                :currentTheme="themeStore.activeTheme"
                             />
                         </div>
+
                         <DayTabs
-                            :itinerary="currentTrip.itinerary"
-                            v-model:activeDay="activeDay"
-                            :startDate="currentTrip.startDate"
+                            :itinerary="tripStore.currentTrip.itinerary"
+                            v-model:activeDay="tripStore.activeDay"
+                            :startDate="tripStore.currentTrip.startDate"
                             :themeConfig="activeThemeConfig"
-                            @add-day="handleAddDay"
-                            @delete-day="handleDeleteDay"
+                            @add-day="tripStore.addDay"
+                            @delete-day="tripStore.removeDay"
                         />
+
                         <div class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-8 pb-32">
                             <SearchBar
                                 ref="searchBar"
@@ -85,33 +90,37 @@
                                 @search="handleSearch"
                                 @select="handleLocationSelect"
                             />
+
                             <draggable
-                                v-model="currentDaySpots"
+                                v-model="currentDaySpotsWritable"
                                 group="spots"
                                 item-key="id"
                                 handle=".drag-handle"
-                                @change="saveData"
                             >
                                 <template #item="{ element, index }">
                                     <SpotItem
                                         :spot="element"
-                                        :nextSpot="currentDaySpots[index + 1]"
-                                        :isLast="index === currentDaySpots.length - 1"
+                                        :nextSpot="tripStore.currentDaySpots[index + 1]"
+                                        :isLast="index === tripStore.currentDaySpots.length - 1"
                                         :themeConfig="activeThemeConfig"
                                         @edit="startEditSpot"
                                         @copy="initiateCopySpot"
                                         @remove="handleRemoveSpot(index)"
                                         @open-map="openSpotOnMaps"
-                                        @update-data="saveData"
+                                        @update-data="tripStore.saveData"
                                         @edit-transport="startEditTransport"
                                         @navigate="
-                                            handleNavigate(element, currentDaySpots[index + 1])
+                                            handleNavigate(
+                                                element,
+                                                tripStore.currentDaySpots[index + 1]
+                                            )
                                         "
                                     />
                                 </template>
                             </draggable>
+
                             <div
-                                v-if="currentDaySpots.length === 0"
+                                v-if="tripStore.currentDaySpots.length === 0"
                                 :class="[
                                     'text-center py-20 border-2 border-dashed rounded-[3rem] opacity-30',
                                     activeThemeConfig.secondaryBorderClass
@@ -121,36 +130,40 @@
                             </div>
 
                             <div
-                                v-if="currentTrip && currentTrip.itinerary.length > 1"
+                                v-if="
+                                    tripStore.currentTrip &&
+                                    tripStore.currentTrip.itinerary.length > 1
+                                "
                                 class="flex justify-center pt-8"
                             >
                                 <button
-                                    @click="handleDeleteDay"
+                                    @click="tripStore.removeDay"
                                     :class="[
                                         'text-xs font-bold transition-all flex items-center gap-2 py-2 px-4 rounded-xl border opacity-40 hover:opacity-100',
-                                        activeTheme === 'muji'
+                                        themeStore.activeTheme === 'muji'
                                             ? 'border-stone-200 text-stone-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50'
                                             : 'border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/10'
                                     ]"
                                 >
                                     <i class="fa-solid fa-trash-can"></i>
-                                    刪除 Day {{ activeDay + 1 }} 整天行程
+                                    刪除 Day {{ tripStore.activeDay + 1 }} 整天行程
                                 </button>
                             </div>
                         </div>
                     </aside>
+
                     <LeafletMap
                         mapId="desktop-map"
-                        :spots="currentDaySpots"
-                        :currentTheme="activeTheme"
+                        :spots="tripStore.currentDaySpots"
+                        :currentTheme="themeStore.activeTheme"
                         class="hidden md:block"
                     />
                 </template>
 
                 <TripCreateForm
                     v-if="showCreateForm"
-                    :isDemo="isDemoMode"
-                    :user="user"
+                    :isDemo="authStore.isDemoMode"
+                    :user="authStore.user"
                     :themeConfig="activeThemeConfig"
                     @cancel="showCreateForm = false"
                     @created="handleTripCreated"
@@ -181,8 +194,8 @@
 
                 <CopySpotDialog
                     :isOpen="showCopyDialog"
-                    :totalDays="currentTrip?.itinerary.length || 0"
-                    :currentDay="activeDay"
+                    :totalDays="tripStore.currentTrip?.itinerary.length || 0"
+                    :currentDay="tripStore.activeDay"
                     :themeConfig="activeThemeConfig"
                     @close="showCopyDialog = false"
                     @confirm="executeCopySpot"
@@ -192,19 +205,12 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
-import { auth, googleProvider } from './firebase'
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
-import {
-    subscribeTrips,
-    saveTripData,
-    deleteTripDoc,
-    getTripDoc,
-    joinTrip
-} from './services/tripService'
-import { parseGoogleMapUrl, getNavUrl } from './utils/mapUtils'
-import { themes } from './utils/themeUtils'
+import { parseGoogleMapUrl, getNavUrl } from './utils/mapUtils' //
 
 import LoginScreen from './components/Auth/LoginScreen.vue'
 import AppHeader from './components/Layout/AppHeader.vue'
@@ -219,459 +225,309 @@ import TransportDialog from './components/Planner/TransportDialog.vue'
 import ShareDialog from './components/Trip/ShareDialog.vue'
 import CopySpotDialog from './components/Planner/CopySpotDialog.vue'
 
-export default {
-    components: {
-        draggable,
-        LoginScreen,
-        AppHeader,
-        TripCard,
-        TripCreateForm,
-        SpotItem,
-        SpotDialog,
-        DayTabs,
-        SearchBar,
-        LeafletMap,
-        TransportDialog,
-        ShareDialog,
-        CopySpotDialog
-    },
-    data() {
-        return {
-            user: null,
-            trips: [],
-            currentTrip: null,
-            activeDay: 0,
-            isDemoMode: false,
-            showCreateForm: false,
-            showManualSpotForm: false,
-            manualSpot: {},
-            searchResults: [],
-            isSearching: false,
-            isEditingExistingSpot: false,
-            showTransportDialog: false,
-            editingTransportSpot: null,
-            showShareDialog: false,
-            showCopyDialog: false,
-            spotToCopy: null,
-            activeTheme: localStorage.getItem('maplio_theme') || 'dark',
-            appVersion: import.meta.env.VITE_APP_VERSION || 'v0.0.0'
-        }
-    },
-    computed: {
-        activeThemeConfig() {
-            return themes[this.activeTheme]
-        },
-        currentDaySpots: {
-            get() {
-                return this.currentTrip?.itinerary[this.activeDay]?.spots || []
-            },
-            set(val) {
-                this.currentTrip.itinerary[this.activeDay].spots = val
-            }
-        }
-    },
-    watch: {
-        activeTheme: {
-            handler(newTheme) {
-                localStorage.setItem('maplio_theme', newTheme)
-                this.updateBodyClass()
-            },
-            immediate: true,
-            deep: false
-        },
-        trips: {
-            handler() {
-                this.checkRouteParam()
-            },
-            immediate: true,
-            deep: false
-        },
-        user: {
-            handler(newUser) {
-                if (newUser && this.$route.params.id) {
-                    this.handleAutoJoin(this.$route.params.id)
-                }
-            }
-        },
-        '$route.params.id': {
-            handler(newId) {
-                if (!newId) {
-                    this.currentTrip = null
-                } else {
-                    this.handleAutoJoin(newId)
-                }
-            },
-            immediate: true,
-            deep: false
-        }
-    },
-    mounted() {
-        onAuthStateChanged(auth, (user) => {
-            if (user && !this.isDemoMode) {
-                this.user = user
-                this.unsubscribe = subscribeTrips(user.uid, (data) => (this.trips = data))
-            }
-        })
-        this.updateBodyClass()
-    },
-    methods: {
-        updateBodyClass() {
-            const body = document.body
-            Object.values(themes).forEach((config) => {
-                const classes = config.appClass.split(' ')
-                body.classList.remove(...classes)
-            })
-            const activeClasses = this.activeThemeConfig.appClass.split(' ')
-            body.classList.add(...activeClasses)
-            body.classList.add('transition-colors', 'duration-500')
-        },
-        async handleAutoJoin(tripId) {
-            if (this.isDemoMode || !this.user) {
-                this.checkRouteParam()
-                return
-            }
+import { useAuthStore } from './stores/auth'
+import { useThemeStore } from './stores/theme'
+import { useTripStore } from './stores/trip'
 
-            try {
-                const trip = await getTripDoc(tripId)
-                if (trip) {
-                    if (!trip.members.includes(this.user.uid)) {
-                        await joinTrip(tripId, this.user.uid)
-                        console.log('已自動加入行程成員')
-                    }
-                }
-            } catch (err) {
-                console.error('自動加入行程失敗:', err)
-            }
-            this.checkRouteParam()
-        },
-        checkRouteParam() {
-            const tripId = this.$route.params.id
-            if (tripId && this.trips.length > 0) {
-                const trip = this.trips.find((t) => t.id === tripId)
-                if (trip) {
-                    this.currentTrip = trip
-                }
-            }
-        },
-        async handleGoogleLogin() {
-            try {
-                await signInWithPopup(auth, googleProvider)
-            } catch (e) {
-                console.error(e)
-            }
-        },
-        enterDemoMode() {
-            this.isDemoMode = true
-            this.user = { uid: 'demo-user', displayName: 'Demo Visitor' }
-            const data = localStorage.getItem('maplio_demo_data')
-            this.trips = data ? JSON.parse(data) : []
-        },
-        logout() {
-            if (confirm('確定登出？')) {
-                signOut(auth)
-                location.reload()
-            }
-        },
-        selectTrip(trip) {
-            this.currentTrip = trip
-            this.activeDay = 0
-            this.$router.push({ name: 'trip', params: { id: trip.id } })
-        },
-        backToList() {
-            this.currentTrip = null
-            this.$router.push('/')
-        },
-        async handleDeleteTrip(id) {
-            if (confirm('確定刪除整份行程？')) {
-                if (this.isDemoMode) {
-                    this.trips = this.trips.filter((t) => t.id !== id)
-                    localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
-                } else {
-                    await deleteTripDoc(id)
-                }
-            }
-        },
-        handleTripCreated() {
-            this.showCreateForm = false
-            if (this.isDemoMode) {
-                const data = localStorage.getItem('maplio_demo_data')
-                this.trips = data ? JSON.parse(data) : []
-            }
-        },
-        handleAddDay() {
-            this.currentTrip.itinerary.push({ spots: [] })
-            this.activeDay = this.currentTrip.itinerary.length - 1
-            this.saveData()
-        },
-        async handleDeleteDay() {
-            if (
-                this.currentTrip.itinerary.length > 1 &&
-                confirm(`刪除 Day ${this.activeDay + 1}？`)
-            ) {
-                this.currentTrip.itinerary.splice(this.activeDay, 1)
-                this.activeDay = Math.max(0, this.activeDay - 1)
-                this.saveData()
-            }
-        },
-        async copyToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(text)
-                    return true
-                } catch (err) {
-                    console.error('Clipboard API 失敗', err)
-                }
-            }
+const router = useRouter()
+const route = useRoute()
 
-            const textArea = document.createElement('textarea')
-            textArea.value = text
+const authStore = useAuthStore()
+const themeStore = useThemeStore()
+const tripStore = useTripStore()
 
-            textArea.style.position = 'fixed'
-            textArea.style.left = '-9999px'
-            textArea.style.top = '0'
-            document.body.appendChild(textArea)
+const { activeThemeConfig } = storeToRefs(themeStore)
+const { user } = storeToRefs(authStore)
 
-            textArea.focus()
-            textArea.select()
+const showCreateForm = ref(false)
+const showManualSpotForm = ref(false)
+const showTransportDialog = ref(false)
+const showShareDialog = ref(false)
+const showCopyDialog = ref(false)
+const manualSpot = ref({})
+const editingTransportSpot = ref(null)
+const spotToCopy = ref(null)
+const searchResults = ref([])
+const isSearching = ref(false)
+const isEditingExistingSpot = ref(false)
+const searchBar = ref(null)
 
-            try {
-                const successful = document.execCommand('copy')
-                document.body.removeChild(textArea)
-                return successful
-            } catch (err) {
-                console.error(err)
-                document.body.removeChild(textArea)
-                return false
-            }
-        },
-        async handleImportTrip() {
-            try {
-                let text = ''
-                if (navigator.clipboard && window.isSecureContext) {
-                    text = await navigator.clipboard.readText()
-                } else {
-                    text = prompt('您的瀏覽器不支援直接讀取剪貼簿，請在此貼上行程 JSON：')
-                }
+const appVersion = import.meta.env.VITE_APP_VERSION || 'v0.0.0'
 
-                if (!text) return
+const currentDaySpotsWritable = computed({
+    get: () => tripStore.currentDaySpots,
+    set: (val) => tripStore.updateCurrentDaySpots(val)
+})
 
-                const importedData = JSON.parse(text)
-
-                if (!importedData.name || !Array.isArray(importedData.itinerary)) {
-                    throw new Error('無效的行程格式：缺少名稱或行程清單')
-                }
-
-                const newTrip = {
-                    ...importedData,
-                    id: 'imp_' + Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                    createdAt: new Date().toISOString(),
-                    members: this.isDemoMode ? ['demo-user'] : [this.user.uid]
-                }
-
-                if (this.isDemoMode) {
-                    this.trips.unshift(newTrip)
-                    localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
-                    alert(`成功匯入行程：${newTrip.name}`)
-                } else {
-                    await saveTripData(newTrip.id, newTrip)
-                    alert(`行程「${newTrip.name}」已同步至雲端！`)
-                }
-            } catch (err) {
-                console.error('匯入失敗:', err)
-                let errorMsg = '匯入失敗，請確認剪貼簿內容是否為正確的 JSON 格式。'
-                if (err.name === 'NotAllowedError') errorMsg = '請授權瀏覽器讀取剪貼簿權限。'
-                alert(errorMsg)
-            }
-        },
-        async handleShareTrip() {
-            if (!this.currentTrip) return
-
-            if (this.isDemoMode) {
-                const tripJson = JSON.stringify(this.currentTrip, null, 2)
-                await this.executeShare('行程 JSON 資料', tripJson, true)
-            } else {
-                this.showShareDialog = true
-            }
-        },
-        async handleShareChoice(choice) {
-            this.showShareDialog = false
-
-            if (choice === 'url') {
-                const shareUrl = window.location.href
-                await this.executeShare('旅程連結', shareUrl, false)
-            } else if (choice === 'json') {
-                const tripJson = JSON.stringify(this.currentTrip, null, 2)
-                await this.executeShare('行程 JSON 資料', tripJson, true)
-            }
-        },
-        async executeShare(label, content, isText) {
-            const title = `Maplio ${label}: ${this.currentTrip.name}`
-
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: title,
-                        [isText ? 'text' : 'url']: content
-                    })
-                    return
-                } catch (err) {
-                    if (err.name === 'AbortError') return
-                    console.warn('原生分享失敗，轉用剪貼簿', err)
-                }
-            }
-            const success = await this.copyToClipboard(content)
-            if (success) {
-                alert(`${label} 已複製到剪貼簿！`)
-            } else {
-                alert('複製失敗!')
-            }
-        },
-        handleSearch(query) {
-            if (query.startsWith('http')) {
-                const parsed = parseGoogleMapUrl(query)
-                this.manualSpot = parsed
-                    ? {
-                          ...parsed,
-                          url: query,
-                          notes: '',
-                          timeStart: '',
-                          timeEnd: '',
-                          showOnMap: true,
-                          source: 'google_parsed'
-                      }
-                    : {
-                          name: '',
-                          url: query,
-                          notes: '',
-                          timeStart: '',
-                          timeEnd: '',
-                          showOnMap: false,
-                          lat: null,
-                          lng: null,
-                          source: 'url_only'
-                      }
-                this.isEditingExistingSpot = false
-                this.showManualSpotForm = true
-            } else {
-                this.performKeywordSearch(query)
-            }
-        },
-        async performKeywordSearch(q) {
-            this.isSearching = true
-            try {
-                const res = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`
-                )
-                this.searchResults = await res.json()
-            } finally {
-                this.isSearching = false
-            }
-        },
-        handleLocationSelect(res) {
-            const lat = parseFloat(res.lat)
-            const lng = parseFloat(res.lon)
-            this.manualSpot = {
-                name: res.display_name.split(',')[0],
-                lat: isNaN(lat) ? null : lat,
-                lng: isNaN(lng) ? null : lng,
-                url: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-                notes: '',
-                timeStart: '',
-                timeEnd: '',
-                showOnMap: true,
-                source: 'search'
-            }
-            this.showManualSpotForm = true
-            this.searchResults = []
-            if (this.$refs.searchBar) this.$refs.searchBar.clear()
-        },
-        startEditSpot(spot) {
-            this.manualSpot = JSON.parse(JSON.stringify(spot))
-            this.isEditingExistingSpot = true
-            this.showManualSpotForm = true
-        },
-        addManualSpot(spotData) {
-            if (this.isEditingExistingSpot) {
-                const idx = this.currentDaySpots.findIndex((s) => s.id === spotData.id)
-                if (idx !== -1) this.currentDaySpots[idx] = { ...spotData }
-            } else {
-                const spot = {
-                    ...spotData,
-                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                    travelMode: 'auto',
-                    showOnMap: !!(spotData.lat && spotData.lng)
-                }
-                this.currentDaySpots.push(spot)
-            }
-            if (this.$refs.searchBar) this.$refs.searchBar.clear()
-            this.showManualSpotForm = false
-            this.saveData()
-        },
-        async saveData() {
-            if (this.currentTrip) {
-                if (this.isDemoMode) {
-                    const idx = this.trips.findIndex((t) => t.id === this.currentTrip.id)
-                    if (idx !== -1) this.trips[idx] = JSON.parse(JSON.stringify(this.currentTrip))
-                    localStorage.setItem('maplio_demo_data', JSON.stringify(this.trips))
-                } else {
-                    await saveTripData(this.currentTrip.id, this.currentTrip)
-                }
-            }
-        },
-        openSpotOnMaps(spot) {
-            window.open(
-                spot.url || `https://www.google.com/maps?q=${spot.lat},${spot.lng}`,
-                '_blank'
-            )
-        },
-        handleNavigate(start, end) {
-            window.open(getNavUrl(start, end, start.travelMode), '_blank')
-        },
-        handleRemoveSpot(index) {
-            this.currentDaySpots.splice(index, 1)
-            this.saveData()
-        },
-        startEditTransport(spot) {
-            this.editingTransportSpot = spot
-            this.showTransportDialog = true
-        },
-        updateTransportInfo(updatedSpotData) {
-            const idx = this.currentDaySpots.findIndex((s) => s.id === updatedSpotData.id)
-            if (idx !== -1) {
-                this.currentDaySpots[idx] = { ...updatedSpotData }
-                this.saveData()
-            }
-            this.showTransportDialog = false
-            this.editingTransportSpot = null
-        },
-        initiateCopySpot(spot) {
-            this.spotToCopy = spot
-            this.showCopyDialog = true
-        },
-        async executeCopySpot(targetDayIndexes) {
-            if (!this.spotToCopy || !this.currentTrip) return
-
-            try {
-                targetDayIndexes.forEach((dayIdx) => {
-                    const newSpot = JSON.parse(JSON.stringify(this.spotToCopy))
-                    newSpot.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
-                    if (!this.currentTrip.itinerary[dayIdx]) {
-                        this.currentTrip.itinerary[dayIdx] = { spots: [] }
-                    }
-                    this.currentTrip.itinerary[dayIdx].spots.push(newSpot)
-                })
-
-                await this.saveData()
-                alert(`成功複製景點到 ${targetDayIndexes.length} 個日期！`)
-            } catch (error) {
-                console.error('複製失敗', error)
-                alert('複製失敗，請稍後再試')
-            } finally {
-                this.showCopyDialog = false
-                this.spotToCopy = null
-            }
+onMounted(async () => {
+    const currentUser = await authStore.initAuthListener()
+    if (currentUser || authStore.isDemoMode) {
+        tripStore.initTripsListener()
+        if (route.params.id) {
+            tripStore.checkAndJoinTrip(route.params.id)
         }
     }
+})
+
+watch(
+    () => route.params.id,
+    (newId) => {
+        if (!newId) {
+            tripStore.currentTrip = null
+        } else {
+            tripStore.checkAndJoinTrip(newId)
+        }
+    }
+)
+
+watch(user, (newUser) => {
+    if (newUser) {
+        console.log('偵測到登入，開始載入行程...')
+        tripStore.initTripsListener()
+
+        if (route.params.id) {
+            tripStore.checkAndJoinTrip(route.params.id)
+        }
+    } else {
+        tripStore.trips = []
+        tripStore.currentTrip = null
+    }
+})
+
+const handleSelectTrip = (trip) => {
+    tripStore.selectTrip(trip.id)
+    router.push({ name: 'trip', params: { id: trip.id } })
+}
+
+const backToList = () => {
+    tripStore.currentTrip = null
+    router.push('/')
+}
+
+const handleTripCreated = () => {
+    showCreateForm.value = false
+}
+
+const handleSearch = (query) => {
+    if (query.startsWith('http')) {
+        const parsed = parseGoogleMapUrl(query)
+        manualSpot.value = parsed
+            ? {
+                  ...parsed,
+                  url: query,
+                  notes: '',
+                  timeStart: '',
+                  timeEnd: '',
+                  showOnMap: true,
+                  source: 'google_parsed'
+              }
+            : {
+                  name: '',
+                  url: query,
+                  notes: '',
+                  timeStart: '',
+                  timeEnd: '',
+                  showOnMap: false,
+                  lat: null,
+                  lng: null,
+                  source: 'url_only'
+              }
+        isEditingExistingSpot.value = false
+        showManualSpotForm.value = true
+    } else {
+        performKeywordSearch(query)
+    }
+}
+
+const performKeywordSearch = async (q) => {
+    isSearching.value = true
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`
+        )
+        searchResults.value = await res.json()
+    } finally {
+        isSearching.value = false
+    }
+}
+
+const handleLocationSelect = (res) => {
+    const lat = parseFloat(res.lat)
+    const lng = parseFloat(res.lon)
+    manualSpot.value = {
+        name: res.display_name.split(',')[0],
+        lat: isNaN(lat) ? null : lat,
+        lng: isNaN(lng) ? null : lng,
+        url: `http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`,
+        notes: '',
+        timeStart: '',
+        timeEnd: '',
+        showOnMap: true,
+        source: 'search'
+    }
+    showManualSpotForm.value = true
+    searchResults.value = []
+    if (searchBar.value) searchBar.value.clear()
+}
+
+const addManualSpot = (spotData) => {
+    const spots = [...tripStore.currentDaySpots]
+    if (isEditingExistingSpot.value) {
+        const idx = spots.findIndex((s) => s.id === spotData.id)
+        if (idx !== -1) spots[idx] = { ...spotData }
+    } else {
+        const spot = {
+            ...spotData,
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            travelMode: 'auto',
+            showOnMap: !!(spotData.lat && spotData.lng)
+        }
+        spots.push(spot)
+    }
+    tripStore.updateCurrentDaySpots(spots)
+    if (searchBar.value) searchBar.value.clear()
+    showManualSpotForm.value = false
+}
+
+const startEditSpot = (spot) => {
+    manualSpot.value = JSON.parse(JSON.stringify(spot))
+    isEditingExistingSpot.value = true
+    showManualSpotForm.value = true
+}
+
+const handleRemoveSpot = (index) => {
+    const spots = [...tripStore.currentDaySpots]
+    spots.splice(index, 1)
+    tripStore.updateCurrentDaySpots(spots)
+}
+
+const startEditTransport = (spot) => {
+    editingTransportSpot.value = spot
+    showTransportDialog.value = true
+}
+
+const updateTransportInfo = (updatedSpotData) => {
+    const spots = [...tripStore.currentDaySpots]
+    const idx = spots.findIndex((s) => s.id === updatedSpotData.id)
+    if (idx !== -1) {
+        spots[idx] = { ...updatedSpotData }
+        tripStore.updateCurrentDaySpots(spots)
+    }
+    showTransportDialog.value = false
+    editingTransportSpot.value = null
+}
+
+const initiateCopySpot = (spot) => {
+    spotToCopy.value = spot
+    showCopyDialog.value = true
+}
+
+const executeCopySpot = async (targetDayIndexes) => {
+    if (!spotToCopy.value || !tripStore.currentTrip) return
+    try {
+        const newItinerary = JSON.parse(JSON.stringify(tripStore.currentTrip.itinerary))
+
+        targetDayIndexes.forEach((dayIdx) => {
+            const newSpot = JSON.parse(JSON.stringify(spotToCopy.value))
+            newSpot.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
+            if (!newItinerary[dayIdx]) newItinerary[dayIdx] = { spots: [] }
+            newItinerary[dayIdx].spots.push(newSpot)
+        })
+
+        tripStore.currentTrip.itinerary = newItinerary
+        await tripStore.saveData()
+        alert(`成功複製景點到 ${targetDayIndexes.length} 個日期！`)
+    } catch (error) {
+        console.error('複製失敗', error)
+        alert('複製失敗，請稍後再試')
+    } finally {
+        showCopyDialog.value = false
+        spotToCopy.value = null
+    }
+}
+
+const handleImportTrip = async () => {
+    try {
+        let text = ''
+        if (navigator.clipboard && window.isSecureContext) {
+            text = await navigator.clipboard.readText()
+        } else {
+            text = prompt('請在此貼上行程 JSON：')
+        }
+        if (!text) return
+
+        const importedData = JSON.parse(text)
+        if (!importedData.name || !Array.isArray(importedData.itinerary)) {
+            throw new Error('無效的行程格式')
+        }
+
+        const newTrip = {
+            ...importedData,
+            id: 'imp_' + Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            createdAt: new Date().toISOString(),
+            members: authStore.isDemoMode ? ['demo-user'] : [authStore.user.uid]
+        }
+
+        if (authStore.isDemoMode) {
+            tripStore.addLocalTrip(newTrip)
+            alert(`成功匯入：${newTrip.name}`)
+        } else {
+            await saveTripData(newTrip.id, newTrip)
+            alert(`行程「${newTrip.name}」已同步至雲端！`)
+        }
+    } catch (err) {
+        console.error('匯入失敗:', err)
+        alert('匯入失敗，格式錯誤或權限不足')
+    }
+}
+
+const handleShareTrip = async () => {
+    if (!tripStore.currentTrip) return
+    if (authStore.isDemoMode) {
+        const tripJson = JSON.stringify(tripStore.currentTrip, null, 2)
+        await executeShare('行程 JSON 資料', tripJson, true)
+    } else {
+        showShareDialog.value = true
+    }
+}
+
+const handleShareChoice = async (choice) => {
+    showShareDialog.value = false
+    if (choice === 'url') {
+        await executeShare('旅程連結', window.location.href, false)
+    } else if (choice === 'json') {
+        const tripJson = JSON.stringify(tripStore.currentTrip, null, 2)
+        await executeShare('行程 JSON 資料', tripJson, true)
+    }
+}
+
+const executeShare = async (label, content, isText) => {
+    const title = `Maplio ${label}: ${tripStore.currentTrip.name}`
+    if (navigator.share) {
+        try {
+            await navigator.share({ title, [isText ? 'text' : 'url']: content })
+            return
+        } catch (err) {
+            if (err.name === 'AbortError') return
+        }
+    }
+    try {
+        await navigator.clipboard.writeText(content)
+        alert(`${label} 已複製到剪貼簿！`)
+    } catch (err) {
+        alert('複製失敗')
+    }
+}
+
+const openSpotOnMaps = (spot) => {
+    window.open(
+        spot.url || `http://googleusercontent.com/maps.google.com/?q=${spot.lat},${spot.lng}`,
+        '_blank'
+    )
+}
+
+const handleNavigate = (start, end) => {
+    window.open(getNavUrl(start, end, start.travelMode), '_blank')
 }
 </script>
 
@@ -679,35 +535,18 @@ export default {
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
-.animate-fade {
-    animation: fadeIn 0.4s ease-out forwards;
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 </style>
 
 <style>
-/* 修正日期、時間、數字輸入框在空值時的高度塌陷問題 */
 input[type='date'],
 input[type='time'],
 input[type='number'] {
     -webkit-appearance: none;
     min-width: 0;
     box-sizing: border-box;
-    /* 新增以下兩行：確保最小高度與一般輸入框一致 */
-    min-height: 2.75rem; /* 約 44px，與 py-3 的高度相符 */
+    min-height: 2.75rem;
     line-height: 1.25rem;
 }
-
-/* 針對 iOS 額外處理，確保內容垂直置中 */
 input[type='date'] {
     display: flex;
     align-items: center;
