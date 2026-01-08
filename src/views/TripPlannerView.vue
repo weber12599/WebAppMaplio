@@ -100,7 +100,9 @@
                     <div
                         :key="tripStore.activeDay"
                         class="absolute inset-0 overflow-y-auto no-scrollbar p-6 space-y-8 pb-32 w-full"
+                        :style="contentStyle"
                         @touchstart="handleTouchStart"
+                        @touchmove="handleTouchMove"
                         @touchend="handleTouchEnd"
                     >
                         <SearchBar
@@ -550,20 +552,46 @@ const executeShare = async (label, content, isText) => {
 // Swipe
 const touchStartX = ref(0)
 const touchStartY = ref(0)
+const touchOffset = ref(0)
+const isSwiping = ref(false)
+
+const contentStyle = computed(() => {
+    if (isSwiping.value) {
+        return {
+            transform: `translateX(${touchOffset.value}px)`,
+            transition: 'none'
+        }
+    }
+    return {}
+})
 
 const handleTouchStart = (e) => {
-    touchStartX.value = e.changedTouches[0].screenX
-    touchStartY.value = e.changedTouches[0].screenY
+    touchStartX.value = e.touches[0].clientX
+    touchStartY.value = e.touches[0].clientY
+    isSwiping.value = true
+    touchOffset.value = 0
 }
 
-const handleTouchEnd = (e) => {
-    const touchEndX = e.changedTouches[0].screenX
-    const touchEndY = e.changedTouches[0].screenY
+const handleTouchMove = (e) => {
+    if (!isSwiping.value) return
 
-    const diffX = touchEndX - touchStartX.value
-    const diffY = touchEndY - touchStartY.value
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+    const diffX = currentX - touchStartX.value
+    const diffY = currentY - touchStartY.value
 
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (e.cancelable) e.preventDefault()
+        touchOffset.value = diffX
+    }
+}
+
+const handleTouchEnd = () => {
+    isSwiping.value = false
+    const diffX = touchOffset.value
+    touchOffset.value = 0
+
+    if (Math.abs(diffX) > 50) {
         const maxDay = tripStore.currentTrip?.itinerary?.length - 1 || 0
 
         if (diffX > 0) {
