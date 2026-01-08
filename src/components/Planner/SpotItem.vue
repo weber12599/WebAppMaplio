@@ -107,7 +107,7 @@
                         <i class="fa-solid fa-location-dot text-xs"></i>
                     </button>
                     <button
-                        @click="$emit('remove')"
+                        @click="confirmRemove"
                         class="w-10 h-10 flex items-center justify-center rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
                     >
                         <i class="fa-solid fa-xmark text-sm"></i>
@@ -213,6 +213,13 @@ export default {
         nextSpot: Object,
         isLast: Boolean,
         themeConfig: Object
+    },
+    methods: {
+        confirmRemove() {
+            if (confirm('確定要刪除這個景點嗎？')) {
+                this.$emit('remove')
+            }
+        }
     },
     computed: {
         canNavigate() {

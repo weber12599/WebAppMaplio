@@ -21,7 +21,7 @@
             </div>
             <div class="mt-8 flex justify-between items-center">
                 <button
-                    @click.stop="$emit('delete', trip.id)"
+                    @click.stop="confirmDelete"
                     class="opacity-30 hover:opacity-100 hover:text-red-500 transition-all"
                 >
                     <i class="fa-solid fa-trash-can"></i>
@@ -46,6 +46,13 @@ export default {
         trip: Object,
         themeConfig: Object
     },
-    emits: ['select', 'delete']
+    emits: ['select', 'delete'],
+    methods: {
+        confirmDelete() {
+            if (confirm(`確定要刪除行程「${this.trip.name}」嗎？此動作無法復原。`)) {
+                this.$emit('delete', this.trip.id)
+            }
+        }
+    }
 }
 </script>
