@@ -163,7 +163,7 @@
                             class="flex justify-center pt-8"
                         >
                             <button
-                                @click="tripStore.removeDay"
+                                @click="handleRemoveDay"
                                 :class="[
                                     'text-xs font-bold transition-all flex items-center gap-2 py-2 px-4 rounded-xl border opacity-40 hover:opacity-100',
                                     themeStore.activeTheme === 'muji'
@@ -367,6 +367,12 @@ watch(
         transitionName.value = newVal > oldVal ? 'slide-left' : 'slide-right'
     }
 )
+
+const handleRemoveDay = () => {
+    if (confirm(`確定刪除 Day ${tripStore.activeDay + 1} 整天行程嗎`)) {
+        tripStore.removeDay()
+    }
+}
 
 const handleSearch = (query) => {
     if (query.startsWith('http')) {
