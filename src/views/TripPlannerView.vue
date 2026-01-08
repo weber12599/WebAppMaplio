@@ -22,7 +22,10 @@
             ]"
         >
             <div
-                class="block md:hidden h-[220px] w-full shrink-0 border-b border-stone-200/50 relative group"
+                :class="[
+                    'block md:hidden h-[220px] w-full shrink-0 border-b relative group',
+                    activeThemeConfig.secondaryBorderClass
+                ]"
             >
                 <div
                     :class="[
@@ -95,7 +98,7 @@
                 @delete-day="tripStore.removeDay"
             />
 
-            <div class="relative flex-grow overflow-hidden bg-stone-50">
+            <div class="relative flex-grow overflow-hidden">
                 <Transition :name="transitionName">
                     <div
                         :key="tripStore.activeDay"
@@ -177,7 +180,7 @@
             </div>
         </aside>
 
-        <div class="hidden md:flex relative flex-grow h-full flex-col overflow-hidden bg-stone-50">
+        <div class="hidden md:flex relative flex-grow h-full flex-col overflow-hidden">
             <div
                 :class="[
                     'absolute top-4 right-4 z-[9999] rounded-lg shadow-md p-1 flex items-center border gap-1',
