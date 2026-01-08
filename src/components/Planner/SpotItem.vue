@@ -74,24 +74,34 @@
                         </button>
                     </div>
 
-                    <div v-if="spot.notes" class="w-full mt-2">
-                        <div v-for="(note, index) in spot.notes.split('\n')" :key="index">
-                            <a
-                                v-if="note.startsWith('http')"
-                                class="text-xs opacity-50 leading-relaxed overflow-hidden text-ellipsis block hover:underline hover:opacity-100"
-                                :href="note"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                @click.stop
+                    <div
+                        v-if="spot.notes"
+                        class="flex items-start gap-2 mt-1 px-2 text-xs text-stone-500 group/notes"
+                    >
+                        <div
+                            class="flex-grow min-w-0"
+                            @click="showExpandBtn && toggleExpand()"
+                            :class="{ 'cursor-pointer': showExpandBtn }"
+                        >
+                            <span
+                                ref="noteRef"
+                                class="block whitespace-pre-wrap break-words transition-all"
+                                :class="{ 'line-clamp-2': !isExpanded }"
+                                v-html="formatNote(spot.notes)"
                             >
-                                {{ note }}
-                            </a>
-                            <div
-                                v-else
-                                class="text-xs opacity-50 leading-relaxed overflow-hidden text-ellipsis"
+                            </span>
+
+                            <button
+                                v-if="showExpandBtn"
+                                @click.stop="toggleExpand"
+                                class="w-full mt-1 font-bold opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-[10px]"
+                                :class="'text-stone-400 hover:text-stone-600'"
                             >
-                                {{ note }}
-                            </div>
+                                <i
+                                    class="fa-solid transition-transform duration-300"
+                                    :class="isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"
+                                ></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -150,27 +160,11 @@
                         </div>
 
                         <div v-if="spot.transportNotes">
-                            <div
-                                v-for="(note, index) in spot.transportNotes.split('\n')"
-                                :key="index"
+                            <span
+                                class="whitespace-pre-wrap break-words transition-all"
+                                v-html="formatNote(spot.transportNotes)"
                             >
-                                <a
-                                    v-if="note.startsWith('http')"
-                                    class="opacity-80 leading-relaxed overflow-hidden text-ellipsis block hover:underline hover:opacity-100"
-                                    :href="note"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    @click.stop
-                                >
-                                    {{ note }}
-                                </a>
-                                <div
-                                    v-else
-                                    class="opacity-80 leading-relaxed overflow-hidden text-wrap"
-                                >
-                                    {{ note }}
-                                </div>
-                            </div>
+                            </span>
                         </div>
 
                         <div v-if="!spot.transportNotes && !spot.transStart && !spot.transEnd">
@@ -207,6 +201,8 @@
 </template>
 
 <script>
+import { formatNote } from '@/utils/stringUtils'
+
 export default {
     props: {
         spot: Object,
@@ -214,11 +210,75 @@ export default {
         isLast: Boolean,
         themeConfig: Object
     },
+    data() {
+        return {
+            isExpanded: false,
+            showExpandBtn: false,
+            resizeObserver: null,
+            formatNote: formatNote
+        }
+    },
+    emits: ['edit', 'copy', 'remove', 'open-map', 'update-data', 'edit-transport', 'navigate'],
     methods: {
         confirmRemove() {
             if (confirm('確定要刪除這個景點嗎？')) {
                 this.$emit('remove')
             }
+        },
+        toggleExpand() {
+            this.isExpanded = !this.isExpanded
+        },
+        checkOverflow() {
+            const el = this.$refs.noteRef
+            if (!el) return
+
+            if (!this.isExpanded) {
+                this.showExpandBtn = el.scrollHeight > el.clientHeight + 1
+            } else {
+                const style = window.getComputedStyle(el)
+                let lineHeight = parseFloat(style.lineHeight)
+                if (isNaN(lineHeight)) {
+                    const fontSize = parseFloat(style.fontSize) || 16
+                    lineHeight = fontSize * 1.2
+                }
+
+                const maxAllowedHeight = lineHeight * 2
+                this.showExpandBtn = el.scrollHeight > maxAllowedHeight + 1
+            }
+        }
+    },
+    watch: {
+        'spot.notes': {
+            handler() {
+                this.isExpanded = false
+                this.$nextTick(() => {
+                    this.checkOverflow()
+                    if (this.showExpandBtn) {
+                        this.isExpanded = true
+                    }
+                })
+            },
+            flush: 'post'
+        }
+    },
+    mounted() {
+        this.$nextTick(() => {
+            setTimeout(() => {
+                this.checkOverflow()
+                this.isExpanded = true
+            }, 50)
+        })
+
+        if (this.$refs.noteRef) {
+            this.resizeObserver = new ResizeObserver(() => {
+                requestAnimationFrame(() => this.checkOverflow())
+            })
+            this.resizeObserver.observe(this.$refs.noteRef)
+        }
+    },
+    beforeUnmount() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect()
         }
     },
     computed: {
@@ -231,3 +291,12 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
