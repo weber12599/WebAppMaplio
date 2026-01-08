@@ -25,7 +25,10 @@
                 class="block md:hidden h-[220px] w-full shrink-0 border-b border-stone-200/50 relative group"
             >
                 <div
-                    class="absolute top-2 right-2 z-[9999] bg-white/90 backdrop-blur rounded-md shadow-sm border border-stone-200 p-1 flex gap-1"
+                    :class="[
+                        'absolute top-2 right-2 z-[9999] rounded-md shadow-sm border p-1 flex gap-1',
+                        activeThemeConfig.floatingPanelClass
+                    ]"
                 >
                     <button
                         @click="viewMode = 'map'"
@@ -33,8 +36,8 @@
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'map'
-                                ? 'bg-stone-800 text-white shadow-sm'
-                                : 'text-stone-400 hover:bg-stone-100'
+                                ? activeThemeConfig.tabActiveClass
+                                : activeThemeConfig.tabInactiveClass
                         ]"
                     >
                         <i class="fa-solid fa-map"></i>
@@ -45,8 +48,8 @@
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'summary'
-                                ? 'bg-stone-800 text-white shadow-sm'
-                                : 'text-stone-400 hover:bg-stone-100'
+                                ? activeThemeConfig.tabActiveClass
+                                : activeThemeConfig.tabInactiveClass
                         ]"
                     >
                         <i class="fa-solid fa-align-left"></i>
@@ -57,8 +60,8 @@
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'todo'
-                                ? 'bg-stone-800 text-white shadow-sm'
-                                : 'text-stone-400 hover:bg-stone-100'
+                                ? activeThemeConfig.tabActiveClass
+                                : activeThemeConfig.tabInactiveClass
                         ]"
                     >
                         <i class="fa-solid fa-list-check"></i>
@@ -163,15 +166,18 @@
 
         <div class="hidden md:flex relative flex-grow h-full flex-col overflow-hidden bg-stone-50">
             <div
-                class="absolute top-4 right-4 z-[9999] bg-white rounded-lg shadow-md p-1 flex items-center border border-stone-200"
+                :class="[
+                    'absolute top-4 right-4 z-[9999] rounded-lg shadow-md p-1 flex items-center border gap-1',
+                    activeThemeConfig.floatingPanelClass
+                ]"
             >
                 <button
                     @click="viewMode = 'map'"
                     :class="[
                         'px-3 py-1.5 rounded-md text-sm font-bold transition-all flex items-center gap-2',
                         viewMode === 'map'
-                            ? 'bg-stone-800 text-white shadow-sm'
-                            : 'text-stone-500 hover:bg-stone-100'
+                            ? activeThemeConfig.tabActiveClass
+                            : activeThemeConfig.tabInactiveClass
                     ]"
                 >
                     <i class="fa-solid fa-map"></i>
@@ -183,8 +189,8 @@
                         'px-3 py-1.5 rounded-md text-sm font-bold transition-all flex items-center gap-2',
                         // 如果現在是 summary 或 todo 模式，桌機版也視為 info 模式 active
                         viewMode !== 'map'
-                            ? 'bg-stone-800 text-white shadow-sm'
-                            : 'text-stone-500 hover:bg-stone-100'
+                            ? activeThemeConfig.tabActiveClass
+                            : activeThemeConfig.tabInactiveClass
                     ]"
                 >
                     <i class="fa-solid fa-clipboard-list"></i>

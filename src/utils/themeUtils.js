@@ -26,6 +26,9 @@ export const themes = {
         dialogSecondaryBtnClass: 'bg-slate-700 text-blue-400 hover:bg-slate-600',
         dialogCancelBtnClass: 'text-slate-500 hover:text-slate-300',
 
+        // 切換面板
+        floatingPanelClass: 'bg-slate-900/90 border-slate-900/90 backdrop-blur-sm',
+
         // 通用按鈕與標籤
         primaryBtnClass: 'bg-blue-600 shadow-blue-600/30 text-white',
         actionBtnClass:
@@ -54,6 +57,9 @@ export const themes = {
         transportSelectClass: 'bg-stone-100 text-stone-600 border-stone-200',
         navBtnClass:
             'bg-stone-100 border-stone-200 text-stone-400 hover:border-stone-600 hover:text-stone-800',
+
+        // 切換面板
+        floatingPanelClass: 'bg-white/90 border-white/90 backdrop-blur-sm',
 
         // 對話框專用樣式 (SpotDialog)
         dialogOverlayClass: 'bg-stone-900/20 backdrop-blur-sm',
