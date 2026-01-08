@@ -23,7 +23,11 @@ export default {
     },
     data() {
         return {
-            hasFittedBounds: false
+            hasFittedBounds: false,
+            renderTimeout: null,
+            resizeTimeout: null,
+            renderDelay: 300,
+            resizeDelay: 200
         }
     },
     created() {
@@ -36,7 +40,10 @@ export default {
             deep: true,
             handler() {
                 this.hasFittedBounds = false
-                this.renderMarkers()
+                clearTimeout(this.renderTimeout)
+                this.renderTimeout = setTimeout(() => {
+                    this.renderMarkers()
+                }, this.renderDelay)
             }
         },
         currentTheme(newTheme) {
@@ -66,10 +73,13 @@ export default {
 
                 const ro = new ResizeObserver(() => {
                     if (this.map) {
-                        this.map.invalidateSize()
-                        if (!this.hasFittedBounds) {
-                            this.adjustMapBounds()
-                        }
+                        clearTimeout(this.resizeTimeout)
+                        this.resizeTimeout = setTimeout(() => {
+                            this.map.invalidateSize()
+                            if (!this.hasFittedBounds) {
+                                this.adjustMapBounds()
+                            }
+                        }, this.resizeDelay)
                     }
                 })
                 ro.observe(this.$el)
