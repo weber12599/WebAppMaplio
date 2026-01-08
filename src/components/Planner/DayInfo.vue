@@ -181,6 +181,7 @@
 </template>
 
 <script setup>
+import { formatNote } from '@/utils/stringUtils'
 import { ref, watch, onMounted, computed, nextTick } from 'vue'
 
 const props = defineProps({
@@ -205,24 +206,7 @@ const summaryInputRef = ref(null)
 
 // Computed property to format summary text: escapes HTML, links URLs, and handles newlines
 const formattedSummary = computed(() => {
-    if (!localSummary.value) return ''
-
-    // 1. Basic XSS protection
-    let text = localSummary.value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
-
-    // 2. Convert URLs to clickable links
-    const urlRegex = /(https?:\/\/[^\s]+)/g
-    text = text.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline break-all">${url}</a>`
-    })
-
-    // 3. Convert newlines to <br>
-    return text.replace(/\n/g, '<br>')
+    return formatNote(localSummary.value)
 })
 
 const enableEdit = async () => {
