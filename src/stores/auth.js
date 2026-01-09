@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { auth, googleProvider } from '../firebase'
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref(null)
-    const isDemoMode = ref(false)
+    const isDemoMode = ref(localStorage.getItem('maplio_is_demo') === 'true')
     const isAuthReady = ref(false)
 
     // 用變數儲存正在進行中的初始化 Promise，避免重複建立
@@ -59,13 +59,25 @@ export const useAuthStore = defineStore('auth', () => {
 
     function enterDemoMode() {
         isDemoMode.value = true
-        user.value = {
-            uid: 'demo-user',
-            displayName: 'Demo User',
-            email: 'demo@example.com',
-            photoURL: null
-        }
     }
+
+    watch(
+        isDemoMode,
+        (newVal) => {
+            if (newVal) {
+                localStorage.setItem('maplio_is_demo', 'true')
+                user.value = {
+                    uid: 'demo-user',
+                    displayName: 'Demo User',
+                    email: 'demo@example.com',
+                    photoURL: null
+                }
+            } else {
+                localStorage.removeItem('maplio_is_demo')
+            }
+        },
+        { immediate: true }
+    )
 
     return {
         user,
