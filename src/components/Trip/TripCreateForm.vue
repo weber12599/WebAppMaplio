@@ -101,6 +101,7 @@
 <script>
 import { db } from '../../firebase'
 import { collection, addDoc } from 'firebase/firestore'
+import { useTripStore } from '../../stores/trip'
 
 export default {
     props: {
@@ -109,6 +110,10 @@ export default {
         themeConfig: Object // 接收全域主題配置
     },
     emits: ['cancel', 'created'],
+    setup() {
+        const tripStore = useTripStore()
+        return { tripStore }
+    },
     data() {
         return {
             newTrip: {
@@ -140,11 +145,8 @@ export default {
                 }
 
                 if (this.isDemo) {
-                    const data = localStorage.getItem('maplio_demo_data')
-                    const trips = data ? JSON.parse(data) : []
                     tripData.id = 'demo_' + Date.now()
-                    trips.unshift(tripData)
-                    localStorage.setItem('maplio_demo_data', JSON.stringify(trips))
+                    this.tripStore.addLocalTrip(tripData)
                 } else {
                     await addDoc(collection(db, 'trips'), tripData)
                 }
