@@ -7,34 +7,14 @@
         :style="{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }"
     >
         <div class="flex items-center gap-4">
-            <!-- <h1
-                class="text-xl md:text-2xl font-bold cursor-pointer tracking-tight select-none"
-                @click="$emit('back')"
-            >
-                Maplio
-            </h1> -->
-
-            <router-link
-                to="/"
-                class="flex items-center gap-2 select-none hover:opacity-80 transition-opacity"
-            >
-                <img :src="logoSrc" alt="Maplio" class="h-8 md:h-10 w-auto object-contain" />
-            </router-link>
-
-            <select
-                :value="currentTheme"
-                @change="$emit('update-theme', $event.target.value)"
-                class="bg-transparent border border-current opacity-40 rounded px-2 py-1 text-[10px] outline-none cursor-pointer hover:opacity-100 transition-opacity"
-            >
-                <option
-                    v-for="(t, key) in themeOptions"
-                    :key="key"
-                    :value="key"
-                    class="text-stone-800"
-                >
-                    {{ t.name }}
-                </option>
-            </select>
+            <div class="flex items-center gap-2 select-none hover:opacity-80 transition-opacity">
+                <img
+                    :src="logoSrc"
+                    alt="Maplio"
+                    class="h-8 md:h-10 w-auto object-contain"
+                    @click="$emit('back')"
+                />
+            </div>
 
             <span v-if="currentTrip" class="hidden md:block opacity-20">/</span>
             <span
@@ -45,6 +25,26 @@
         </div>
 
         <div class="flex items-center gap-3 md:gap-4">
+            <div
+                class="relative flex items-center justify-center hover:opacity-100 transition-all px-2 cursor-pointer"
+                title="切換主題"
+            >
+                <i
+                    class="fa-solid text-lg opacity-40"
+                    :class="themeOptions[currentTheme].name === '淺色' ? 'fa-sun' : 'fa-moon'"
+                ></i>
+
+                <select
+                    :value="currentTheme"
+                    @change="$emit('update-theme', $event.target.value)"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
+                >
+                    <option v-for="(t, key) in themeOptions" :key="key" :value="key">
+                        {{ t.name }}
+                    </option>
+                </select>
+            </div>
+
             <button
                 @click="showVersionInfo"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
