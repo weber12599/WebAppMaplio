@@ -1,0 +1,12 @@
+<svg width="240" height="60" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M24 30C24 30 28 14 42 14C56 14 58 38 72 38C86 38 90 22 90 22" stroke="url(#paint2_linear)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="42" cy="14" r="5" fill="#38BDF8"/>
+    <circle cx="72" cy="38" r="5" fill="#FBBF24"/>
+    <text x="105" y="36" fill="#E2E8F0" font-family="'Nunito', 'Poppins', sans-serif" font-weight="700" font-size="32">maplio</text>
+    <defs>
+        <linearGradient id="paint2_linear" x1="24" y1="26" x2="90" y2="26" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#38BDF8"/>
+            <stop offset="1" stop-color="#2DD4BF"/>
+        </linearGradient>
+    </defs>
+</svg>

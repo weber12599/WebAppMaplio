@@ -7,12 +7,19 @@
         :style="{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }"
     >
         <div class="flex items-center gap-4">
-            <h1
+            <!-- <h1
                 class="text-xl md:text-2xl font-bold cursor-pointer tracking-tight select-none"
                 @click="$emit('back')"
             >
                 Maplio
-            </h1>
+            </h1> -->
+
+            <router-link
+                to="/"
+                class="flex items-center gap-2 select-none hover:opacity-80 transition-opacity"
+            >
+                <img :src="logoSrc" alt="Maplio" class="h-8 md:h-10 w-auto object-contain" />
+            </router-link>
 
             <select
                 :value="currentTheme"
@@ -99,6 +106,15 @@ export default {
     ],
     data() {
         return { themeOptions: themes }
+    },
+    computed: {
+        logoSrc() {
+            const config = this.themeOptions[this.currentTheme]
+
+            if (!config) return '/logos/logo-dark.svg?v=2'
+
+            return config.name === '淺色' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
+        }
     },
     methods: {
         showVersionInfo() {
