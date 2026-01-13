@@ -11,7 +11,7 @@
                         activeThemeConfig.loadingIconClass || 'text-stone-400'
                     ]"
                 ></i>
-                <p class="text-sm font-bold">正在讀取行程...</p>
+                <p class="text-sm font-bold">{{ $t('home.loading_trips') }}</p>
             </div>
         </div>
 
@@ -34,10 +34,10 @@
             class="flex-grow flex flex-col items-center justify-center opacity-40 gap-4 min-h-[300px]"
         >
             <i class="fa-solid fa-map-location-dot text-6xl mb-2"></i>
-            <h3 class="text-xl font-bold">還沒有任何行程</h3>
-            <p class="text-sm">點擊右上角的「建立行程」開始規劃吧！</p>
+            <h3 class="text-xl font-bold">{{ $t('home.no_trips') }}</h3>
+            <p class="text-sm">{{ $t('home.start_planning') }}</p>
             <p v-if="authStore.isDemoMode" class="text-xs text-stone-400 mt-2">
-                (Demo 模式建立的行程僅儲存於瀏覽器，不會同步至雲端)
+                {{ $t('home.demo_tip') }}
             </p>
         </div>
     </div>

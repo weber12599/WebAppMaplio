@@ -7,7 +7,7 @@
                     activeThemeConfig.loadingIconClass || 'text-stone-400'
                 ]"
             ></i>
-            <p class="text-sm font-bold">載入行程中...</p>
+            <p class="text-sm font-bold">{{ $t('planner.loading') }}</p>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
                 >
                     <button
                         @click="viewMode = 'map'"
-                        title="地圖"
+                        :title="$t('planner.tab_map')"
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'map'
@@ -47,7 +47,7 @@
                     </button>
                     <button
                         @click="viewMode = 'summary'"
-                        title="摘要"
+                        :title="$t('planner.tab_summary')"
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'summary'
@@ -59,7 +59,7 @@
                     </button>
                     <button
                         @click="viewMode = 'todo'"
-                        title="待辦事項"
+                        :title="$t('planner.tab_todo')"
                         :class="[
                             'w-8 h-8 flex items-center justify-center rounded text-sm transition-colors',
                             viewMode === 'todo'
@@ -107,6 +107,7 @@
                         @touchstart="handleTouchStart"
                         @touchmove="handleTouchMove"
                         @touchend="handleTouchEnd"
+                        @wheel="handleWheel"
                     >
                         <SearchBar
                             ref="searchBar"
@@ -153,7 +154,7 @@
                                 activeThemeConfig.secondaryBorderClass
                             ]"
                         >
-                            <p class="text-sm font-bold">今天還沒安排行程，試試搜尋景點吧！</p>
+                            <p class="text-sm font-bold">{{ $t('planner.empty_day_hint') }}</p>
                         </div>
 
                         <div
@@ -172,7 +173,7 @@
                                 ]"
                             >
                                 <i class="fa-solid fa-trash-can"></i>
-                                刪除 Day {{ tripStore.activeDay + 1 }} 整天行程
+                                {{ $t('planner.delete_day_btn', { day: tripStore.activeDay + 1 }) }}
                             </button>
                         </div>
                     </div>
@@ -197,20 +198,19 @@
                     ]"
                 >
                     <i class="fa-solid fa-map"></i>
-                    <span class="hidden lg:inline">地圖</span>
+                    <span class="hidden lg:inline">{{ $t('planner.tab_map') }}</span>
                 </button>
                 <button
                     @click="viewMode = 'info'"
                     :class="[
                         'px-3 py-1.5 rounded-md text-sm font-bold transition-all flex items-center gap-2',
-                        // 如果現在是 summary 或 todo 模式，桌機版也視為 info 模式 active
                         viewMode !== 'map'
                             ? activeThemeConfig.tabActiveClass
                             : activeThemeConfig.tabInactiveClass
                     ]"
                 >
                     <i class="fa-solid fa-clipboard-list"></i>
-                    <span class="hidden lg:inline">筆記</span>
+                    <span class="hidden lg:inline">{{ $t('planner.tab_notes') }}</span>
                 </button>
             </div>
 
@@ -263,17 +263,17 @@
     </div>
 
     <div v-else class="flex-grow flex items-center justify-center h-full opacity-40">
-        <p class="text-sm font-bold">找不到此行程或無權限查看</p>
+        <p class="text-sm font-bold">{{ $t('planner.not_found') }}</p>
     </div>
 </template>
 
 <script setup>
-// Script setup 內容與之前相同，不需要更動
 import { ref, computed, defineExpose, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import { parseGoogleMapUrl, getNavUrl } from '../utils/mapUtils'
+import { useI18n } from 'vue-i18n'
 
 import SpotItem from '../components/Planner/SpotItem.vue'
 import SpotDialog from '../components/Trip/SpotDialog.vue'
@@ -293,6 +293,7 @@ const route = useRoute()
 const themeStore = useThemeStore()
 const tripStore = useTripStore()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const { activeThemeConfig } = storeToRefs(themeStore)
 const { user } = storeToRefs(authStore)
@@ -311,7 +312,6 @@ const isEditingExistingSpot = ref(false)
 const searchBar = ref(null)
 const transitionName = ref('slide-left')
 
-// 視圖模式: 'map', 'summary', 'todo', 'info'
 const viewMode = ref('map')
 
 const currentDaySpotsWritable = computed({
@@ -369,7 +369,7 @@ watch(
 )
 
 const handleRemoveDay = () => {
-    if (confirm(`確定刪除 Day ${tripStore.activeDay + 1} 整天行程嗎`)) {
+    if (confirm(t('planner.confirm_delete_day', { day: tripStore.activeDay + 1 }))) {
         tripStore.removeDay()
     }
 }
@@ -500,10 +500,10 @@ const executeCopySpot = async (targetDayIndexes) => {
         })
         tripStore.currentTrip.itinerary = newItinerary
         await tripStore.saveData()
-        alert(`成功複製景點到 ${targetDayIndexes.length} 個日期！`)
+        alert(t('planner.copy_success', { count: targetDayIndexes.length }))
     } catch (error) {
-        console.error('複製失敗', error)
-        alert('複製失敗，請稍後再試')
+        console.error(error)
+        alert(t('planner.copy_failed'))
     } finally {
         showCopyDialog.value = false
         spotToCopy.value = null
@@ -524,7 +524,7 @@ const handleNavigate = (start, end) => {
 const openShareDialog = () => {
     if (authStore.isDemoMode) {
         const tripJson = JSON.stringify(tripStore.currentTrip, null, 2)
-        executeShare('行程 JSON 資料', tripJson, true)
+        executeShare(t('planner.share_json'), tripJson, true)
     } else {
         showShareDialog.value = true
     }
@@ -533,15 +533,16 @@ const openShareDialog = () => {
 const handleShareChoice = async (choice) => {
     showShareDialog.value = false
     if (choice === 'url') {
-        await executeShare('旅程連結', window.location.href, false)
+        await executeShare(t('planner.share_link'), window.location.href, false)
     } else if (choice === 'json') {
         const tripJson = JSON.stringify(tripStore.currentTrip, null, 2)
-        await executeShare('行程 JSON 資料', tripJson, true)
+        await executeShare(t('planner.share_json'), tripJson, true)
     }
 }
 
 const executeShare = async (label, content, isText) => {
-    const title = `Maplio ${label}: ${tripStore.currentTrip.name}`
+    const title = t('planner.share_title', { label, tripName: tripStore.currentTrip.name })
+
     if (navigator.share) {
         try {
             await navigator.share({ title, [isText ? 'text' : 'url']: content })
@@ -552,9 +553,9 @@ const executeShare = async (label, content, isText) => {
     }
     try {
         await navigator.clipboard.writeText(content)
-        alert(`${label} 已複製到剪貼簿！`)
+        alert(t('planner.copied', { label }))
     } catch (err) {
-        alert('複製失敗')
+        alert(t('planner.copy_fail'))
     }
 }
 
@@ -621,7 +622,6 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 向左滑 (下一頁) */
 .slide-left-enter-active,
 .slide-left-leave-active {
     transition: all 0.3s ease-out;
@@ -637,7 +637,6 @@ defineExpose({
     opacity: 0;
 }
 
-/* 向右滑 (上一頁) */
 .slide-right-enter-active,
 .slide-right-leave-active {
     transition: all 0.3s ease-out;

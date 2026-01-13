@@ -67,7 +67,6 @@ export default {
 </script>
 
 <style scoped>
-/* 隱藏滾動條但保持功能 */
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }

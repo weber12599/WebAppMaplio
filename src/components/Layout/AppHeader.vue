@@ -26,12 +26,27 @@
 
         <div class="flex items-center gap-3 md:gap-4">
             <div
+                class="relative flex items-center justify-center opacity-40 hover:opacity-100 transition-all px-2 cursor-pointer"
+                :title="$t('app.change_lang')"
+            >
+                <i class="fa-solid fa-globe text-lg"></i>
+                <select
+                    v-model="$i18n.locale"
+                    @change="handleLanguageChange"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
+                >
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en-US">English</option>
+                </select>
+            </div>
+
+            <div
                 class="relative flex items-center justify-center hover:opacity-100 transition-all px-2 cursor-pointer"
-                title="切換主題"
+                :title="$t('app.change_theme')"
             >
                 <i
                     class="fa-solid text-lg opacity-40"
-                    :class="themeOptions[currentTheme].name === '淺色' ? 'fa-sun' : 'fa-moon'"
+                    :class="currentTheme === 'muji' ? 'fa-sun' : 'fa-moon'"
                 ></i>
 
                 <select
@@ -40,7 +55,7 @@
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
                 >
                     <option v-for="(t, key) in themeOptions" :key="key" :value="key">
-                        {{ t.name }}
+                        {{ $t(`theme.${key}`) }}
                     </option>
                 </select>
             </div>
@@ -48,7 +63,7 @@
             <button
                 @click="showVersionInfo"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
-                title="關於 Maplio"
+                :title="$t('app.about')"
             >
                 <i class="fa-solid fa-circle-info"></i>
             </button>
@@ -56,7 +71,7 @@
             <button
                 @click="$emit('logout')"
                 class="opacity-40 hover:opacity-100 hover:text-red-400 transition-all px-2"
-                title="登出"
+                :title="$t('app.logout')"
             >
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
@@ -65,7 +80,7 @@
                 v-if="!currentTrip"
                 @click="$emit('import')"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
-                title="從剪貼簿匯入 JSON"
+                :title="$t('app.import_json')"
             >
                 <i class="fa-solid fa-file-import"></i>
             </button>
@@ -74,7 +89,7 @@
                 v-if="currentTrip"
                 @click="$emit('share')"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
-                title="分享旅程"
+                :title="$t('app.share_trip')"
             >
                 <i class="fa-solid fa-share-nodes"></i>
             </button>
@@ -83,7 +98,7 @@
                 v-if="showAddButton"
                 @click="$emit('create')"
                 class="opacity-40 hover:opacity-100 hover:text-blue-400 transition-all px-2"
-                title="新增旅程"
+                :title="$t('app.new_trip')"
             >
                 <i class="fa-solid fa-plus mr-1"></i>
             </button>
@@ -93,6 +108,8 @@
 
 <script>
 import { themes } from '../../utils/themeUtils'
+import { useI18n } from 'vue-i18n'
+
 export default {
     emits: ['back', 'update-theme', 'logout', 'import', 'share', 'create'],
     props: [
@@ -104,22 +121,31 @@ export default {
         'themeClass',
         'appVersion'
     ],
+    setup() {
+        const { t, locale } = useI18n()
+
+        const handleLanguageChange = (e) => {
+            const lang = e.target.value
+            localStorage.setItem('maplio_locale', lang)
+        }
+
+        return { t, locale, handleLanguageChange }
+    },
     data() {
         return { themeOptions: themes }
     },
     computed: {
         logoSrc() {
-            const config = this.themeOptions[this.currentTheme]
-
-            if (!config) return '/logos/logo-dark.svg?v=2'
-
-            return config.name === '淺色' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
+            return this.currentTheme === 'muji' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
         }
     },
     methods: {
         showVersionInfo() {
+            const mode = this.isDemo ? this.t('app.mode_demo') : this.t('app.mode_cloud')
+            const unknown = this.t('app.unknown')
+
             alert(
-                `Maplio 版本資訊\n當前版本: ${this.appVersion || '未知'}\n環境: ${this.isDemo ? 'Demo 模式' : '雲端同步模式'}`
+                `Maplio ${this.t('app.version_info')}\n${this.t('app.current_version')}: ${this.appVersion || unknown}\n${this.t('app.env')}: ${mode}`
             )
         }
     }

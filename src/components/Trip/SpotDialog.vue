@@ -12,7 +12,7 @@
             ]"
         >
             <h3 :class="['text-xl font-black transition-colors', themeConfig.dialogTitleClass]">
-                景點詳細資訊
+                {{ $t('planner.spot_dialog.title') }}
             </h3>
 
             <div class="space-y-4">
@@ -22,11 +22,11 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >名稱 *</label
+                        >{{ $t('planner.spot_dialog.label_name') }}</label
                     >
                     <input
                         v-model="localSpot.name"
-                        placeholder="請輸入名稱"
+                        :placeholder="$t('planner.spot_dialog.placeholder_name')"
                         :class="[
                             'w-full rounded-xl px-4 py-3 outline-none border transition-all',
                             themeConfig.dialogInputClass
@@ -41,7 +41,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >開始時間</label
+                            >{{ $t('planner.spot_dialog.label_start_time') }}</label
                         >
                         <input
                             type="time"
@@ -58,7 +58,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >結束時間</label
+                            >{{ $t('planner.spot_dialog.label_end_time') }}</label
                         >
                         <input
                             type="time"
@@ -77,11 +77,11 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >備註</label
+                        >{{ $t('planner.spot_dialog.label_notes') }}</label
                     >
                     <textarea
                         v-model="localSpot.notes"
-                        placeholder="在此輸入備註資訊..."
+                        :placeholder="$t('planner.spot_dialog.placeholder_notes')"
                         :class="[
                             'w-full rounded-xl px-4 py-3 text-xs outline-none resize-none h-20 border transition-all',
                             themeConfig.dialogInputClass
@@ -95,7 +95,7 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >Google Map 網址</label
+                        >{{ $t('planner.spot_dialog.label_url') }}</label
                     >
                     <input
                         v-model="localSpot.url"
@@ -114,7 +114,7 @@
                                 'text-[10px] font-black uppercase transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >座標位置</label
+                            >{{ $t('planner.spot_dialog.label_coords') }}</label
                         >
                         <button
                             @click="handlePaste"
@@ -123,7 +123,8 @@
                                 themeConfig.dialogSecondaryBtnClass
                             ]"
                         >
-                            <i class="fa-solid fa-paste mr-1"></i> 從剪貼簿貼上
+                            <i class="fa-solid fa-paste mr-1"></i>
+                            {{ $t('planner.spot_dialog.btn_paste') }}
                         </button>
                     </div>
                     <div class="flex gap-4">
@@ -131,7 +132,7 @@
                             v-model.number="localSpot.lat"
                             type="number"
                             step="any"
-                            placeholder="緯度 (Lat)"
+                            :placeholder="$t('planner.spot_dialog.placeholder_lat')"
                             :class="[
                                 'w-full rounded-xl px-4 py-3 outline-none border transition-all',
                                 themeConfig.dialogInputClass
@@ -141,7 +142,7 @@
                             v-model.number="localSpot.lng"
                             type="number"
                             step="any"
-                            placeholder="經度 (Lng)"
+                            :placeholder="$t('planner.spot_dialog.placeholder_lng')"
                             :class="[
                                 'w-full rounded-xl px-4 py-3 outline-none border transition-all',
                                 themeConfig.dialogInputClass
@@ -159,7 +160,7 @@
                         themeConfig.dialogCancelBtnClass
                     ]"
                 >
-                    取消
+                    {{ $t('common.cancel') }}
                 </button>
                 <button
                     @click="$emit('confirm', localSpot)"
@@ -168,7 +169,7 @@
                         themeConfig.primaryBtnClass
                     ]"
                 >
-                    確認
+                    {{ $t('common.confirm') }}
                 </button>
             </div>
         </div>
@@ -177,11 +178,16 @@
 
 <script>
 import { parseClipboardCoords } from '../../utils/mapUtils'
+import { useI18n } from 'vue-i18n'
 
 export default {
     props: {
         modelValue: Object,
         themeConfig: Object
+    },
+    setup() {
+        const { t } = useI18n()
+        return { t }
     },
     data() {
         return {
@@ -198,7 +204,7 @@ export default {
                     this.localSpot.lng = coords.lng
                 }
             } catch (err) {
-                console.error('無法讀取剪貼簿', err)
+                console.error('Fail to read a valid JSON from clipboard ', err)
             }
         }
     }

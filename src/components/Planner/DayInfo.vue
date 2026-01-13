@@ -11,7 +11,7 @@
                     ]"
                 >
                     <i class="fa-solid fa-align-left opacity-60"></i>
-                    單日摘要
+                    {{ $t('planner.day_summary') }}
                 </h3>
 
                 <div class="relative group">
@@ -21,7 +21,7 @@
                         v-model="localSummary"
                         @input="handleSummaryInput"
                         @blur="isEditingSummary = false"
-                        placeholder="紀錄本日重點，例如：天氣預報、穿搭建議、總預算..."
+                        :placeholder="$t('planner.day_summary_placeholder')"
                         :class="[
                             'w-full h-32 p-4 rounded-xl outline-none resize-none transition-all shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent block',
                             themeConfig.inputClass
@@ -38,7 +38,7 @@
                         ]"
                     >
                         <span v-if="localSummary" v-html="formattedSummary"></span>
-                        <span v-else>紀錄本日重點，例如：天氣預報、穿搭建議、總預算...</span>
+                        <span v-else>{{ $t('planner.day_summary_placeholder') }}</span>
 
                         <div
                             class="absolute top-2 right-2 opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none"
@@ -59,7 +59,7 @@
                     ]"
                 >
                     <i class="fa-solid fa-list-check opacity-60"></i>
-                    待辦事項
+                    {{ $t('planner.todo_list') }}
                 </h3>
 
                 <div class="flex gap-2">
@@ -67,7 +67,7 @@
                         v-model="newTodoText"
                         @keyup.enter="addTodo"
                         type="text"
-                        placeholder="新增待辦事項 (按 Enter 新增)"
+                        :placeholder="$t('planner.add_todo_placeholder')"
                         :class="[
                             'flex-grow px-4 py-2 rounded-lg outline-none resize-none transition-all shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent block',
                             themeConfig.inputClass
@@ -142,7 +142,7 @@
                                     'w-7 h-7 flex items-center justify-center rounded hover:bg-slate-500/10',
                                     themeConfig.dialogLabelClass
                                 ]"
-                                title="縮排"
+                                :title="$t('planner.todo_indent')"
                             >
                                 <i class="fa-solid fa-indent"></i>
                             </button>
@@ -153,7 +153,7 @@
                                     'w-7 h-7 flex items-center justify-center rounded hover:bg-slate-500/10',
                                     themeConfig.dialogLabelClass
                                 ]"
-                                title="取消縮排"
+                                :title="$t('planner.todo_outdent')"
                             >
                                 <i class="fa-solid fa-outdent"></i>
                             </button>
@@ -173,7 +173,7 @@
                         themeConfig.dialogLabelClass || 'text-stone-400'
                     ]"
                 >
-                    尚無待辦事項
+                    {{ $t('planner.no_todos') }}
                 </div>
             </section>
         </div>
@@ -183,6 +183,7 @@
 <script setup>
 import { formatNote } from '@/utils/stringUtils'
 import { ref, watch, onMounted, computed, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
     summary: String,
@@ -195,6 +196,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update'])
+const { t } = useI18n()
 const localSummary = ref('')
 const localTodos = ref([])
 const newTodoText = ref('')

@@ -12,7 +12,7 @@
             ]"
         >
             <h3 :class="['font-bold text-xl transition-colors', themeConfig.dialogTitleClass]">
-                建立新旅程 {{ isDemo ? '(本地儲存)' : '' }}
+                {{ isDemo ? $t('trip_form.title_local') : $t('trip_form.title') }}
             </h3>
 
             <div class="space-y-4">
@@ -22,11 +22,11 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >旅程名稱</label
+                        >{{ $t('trip_form.label_name') }}</label
                     >
                     <input
                         v-model="newTrip.name"
-                        placeholder="例如：東京跨年五日遊..."
+                        :placeholder="$t('trip_form.placeholder_name')"
                         :class="[
                             'w-full rounded-xl px-4 py-3 outline-none border transition-all',
                             themeConfig.dialogInputClass
@@ -41,7 +41,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >起始日期</label
+                            >{{ $t('trip_form.label_date') }}</label
                         >
                         <input
                             type="date"
@@ -58,7 +58,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >天數</label
+                            >{{ $t('trip_form.label_duration') }}</label
                         >
                         <input
                             type="number"
@@ -81,7 +81,7 @@
                         themeConfig.dialogCancelBtnClass
                     ]"
                 >
-                    取消
+                    {{ $t('common.cancel') }}
                 </button>
                 <button
                     @click="handleCreate"
@@ -91,7 +91,7 @@
                         themeConfig.primaryBtnClass
                     ]"
                 >
-                    {{ isSubmitting ? '建立中...' : '建立行程' }}
+                    {{ isSubmitting ? $t('trip_form.btn_creating') : $t('trip_form.btn_create') }}
                 </button>
             </div>
         </div>
@@ -102,17 +102,21 @@
 import { db } from '../../firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import { useTripStore } from '../../stores/trip'
+import { useThemeStore } from '../../stores/theme'
+import { useI18n } from 'vue-i18n'
 
 export default {
     props: {
         isDemo: Boolean,
         user: Object,
-        themeConfig: Object // 接收全域主題配置
+        themeConfig: Object
     },
     emits: ['cancel', 'created'],
     setup() {
         const tripStore = useTripStore()
-        return { tripStore }
+        const themeStore = useThemeStore()
+        const { t } = useI18n()
+        return { tripStore, themeStore, t }
     },
     data() {
         return {
@@ -127,7 +131,7 @@ export default {
     methods: {
         async handleCreate() {
             if (!this.newTrip.name || !this.newTrip.startDate) {
-                return alert('請填寫完整資訊')
+                return alert(this.t('trip_form.error_incomplete'))
             }
 
             this.isSubmitting = true
@@ -139,7 +143,7 @@ export default {
                 const tripData = {
                     name: this.newTrip.name,
                     startDate: this.newTrip.startDate,
-                    members: [this.user.uid],
+                    members: [this.user ? this.user.uid : 'demo-user'],
                     itinerary,
                     createdAt: this.isDemo ? new Date().toISOString() : new Date()
                 }
@@ -154,8 +158,8 @@ export default {
                 this.$emit('created')
                 this.resetForm()
             } catch (error) {
-                console.error('建立旅程失敗:', error)
-                alert('建立失敗，請稍後再試')
+                console.error('Fail to create a trip:', error)
+                alert(this.t('trip_form.error_failed'))
             } finally {
                 this.isSubmitting = false
             }
@@ -168,9 +172,9 @@ export default {
 </script>
 
 <style scoped>
-/* 日期選擇器的圖示樣式 */
-input[type='date']::-webkit-calendar-picker-indicator {
-    filter: v-bind('themeConfig.name === "深色" ? "invert(1)" : "none"');
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+    filter: v-bind('themeStore.currentTheme === "dark" ? "invert(1)" : "none"');
     opacity: 0.5;
     cursor: pointer;
 }

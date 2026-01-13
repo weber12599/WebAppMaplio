@@ -44,7 +44,7 @@
                         src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png"
                         width="20"
                     />
-                    使用 Google 帳號登入
+                    <span>{{ $t('login.google_login') }}</span>
                 </button>
 
                 <button
@@ -54,8 +54,13 @@
                         themeConfig.googleBtnClass
                     ]"
                 >
-                    直接試用 (不需登入)
-                    <p class="text-[10px] uppercase mt-1 opacity-50">資料將儲存於瀏覽器</p>
+                    <div class="flex flex-col items-center leading-tight">
+                        <span>{{ $t('login.demo_login') }}</span>
+                        <span
+                            class="text-[10px] opacity-50 font-normal mt-0.5 group-hover:opacity-80"
+                            >{{ $t('login.demo_desc') }}</span
+                        >
+                    </div>
                 </button>
             </div>
         </div>

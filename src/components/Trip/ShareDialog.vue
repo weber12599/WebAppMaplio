@@ -12,9 +12,9 @@
         >
             <div class="mb-6 text-center">
                 <h3 class="text-xl font-bold mb-2" :class="themeConfig.dialogTitleClass">
-                    分享旅程
+                    {{ $t('planner.share_dialog.title') }}
                 </h3>
-                <p class="text-sm opacity-60">請選擇您想要分享的方式</p>
+                <p class="text-sm opacity-60">{{ $t('planner.share_dialog.subtitle') }}</p>
             </div>
 
             <div class="space-y-3">
@@ -30,8 +30,12 @@
                             <i class="fa-solid fa-link"></i>
                         </div>
                         <div class="text-left">
-                            <div class="font-bold text-sm">分享旅程連結</div>
-                            <div class="text-[10px] opacity-40">適合已加入成員的使用者</div>
+                            <div class="font-bold text-sm">
+                                {{ $t('planner.share_dialog.link_title') }}
+                            </div>
+                            <div class="text-[10px] opacity-40">
+                                {{ $t('planner.share_dialog.link_desc') }}
+                            </div>
                         </div>
                     </div>
                     <i
@@ -51,8 +55,12 @@
                             <i class="fa-solid fa-code"></i>
                         </div>
                         <div class="text-left">
-                            <div class="font-bold text-sm">匯出 JSON 原始資料</div>
-                            <div class="text-[10px] opacity-40">適合備份或手動匯入</div>
+                            <div class="font-bold text-sm">
+                                {{ $t('planner.share_dialog.json_title') }}
+                            </div>
+                            <div class="text-[10px] opacity-40">
+                                {{ $t('planner.share_dialog.json_desc') }}
+                            </div>
                         </div>
                     </div>
                     <i
@@ -65,7 +73,7 @@
                 @click="$emit('cancel')"
                 class="w-full mt-6 py-3 text-sm font-bold opacity-40 hover:opacity-100 transition-opacity"
             >
-                取消
+                {{ $t('common.cancel') }}
             </button>
         </div>
     </div>

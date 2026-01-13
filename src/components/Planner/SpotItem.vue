@@ -25,7 +25,7 @@
 
                         <div class="flex items-center gap-2 truncate">
                             <p class="font-bold opacity-90 tracking-tight truncate">
-                                {{ spot.name || '未命名景點' }}
+                                {{ spot.name || $t('planner.unnamed_spot') }}
                             </p>
 
                             <span
@@ -60,7 +60,7 @@
                         <button
                             @click="$emit('copy', spot)"
                             class="opacity-30 hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center"
-                            title="複製此景點到其他天"
+                            :title="$t('planner.copy_spot_tooltip')"
                         >
                             <i class="fa-regular fa-copy text-[11px]"></i>
                         </button>
@@ -68,7 +68,7 @@
                         <button
                             @click="$emit('edit', spot)"
                             class="opacity-30 hover:opacity-100 transition-opacity"
-                            title="編輯"
+                            :title="$t('planner.edit_spot_tooltip')"
                         >
                             <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                         </button>
@@ -138,10 +138,10 @@
                         themeConfig.transportSelectClass
                     ]"
                 >
-                    <option value="auto">✨ 自動模式</option>
-                    <option value="driving">🚗 點對點開車</option>
-                    <option value="transit">🚌 大眾運輸</option>
-                    <option value="walking">🚶 徒步前往</option>
+                    <option value="auto">{{ $t('planner.transport.auto') }}</option>
+                    <option value="driving">{{ $t('planner.transport.driving') }}</option>
+                    <option value="transit">{{ $t('planner.transport.transit') }}</option>
+                    <option value="walking">{{ $t('planner.transport.walking') }}</option>
                 </select>
 
                 <div class="flex-grow overflow-hidden">
@@ -172,7 +172,7 @@
                                 <div
                                     class="opacity-80 italic leading-relaxed overflow-hidden text-ellipsis"
                                 >
-                                    ＋ 交通備註與時間
+                                    {{ $t('planner.transport_note_placeholder') }}
                                 </div>
                             </div>
                         </div>
@@ -190,7 +190,7 @@
                             ? 'opacity-20 cursor-not-allowed grayscale'
                             : 'hover:scale-110 active:scale-90'
                     ]"
-                    :title="canNavigate ? '開啟導航' : '缺少經緯度，無法導航'"
+                    :title="canNavigate ? $t('planner.nav_tooltip') : $t('planner.nav_disabled')"
                 >
                     <i class="fa-solid fa-route text-xs"></i>
                 </button>
@@ -202,6 +202,7 @@
 
 <script>
 import { formatNote } from '@/utils/stringUtils'
+import { useI18n } from 'vue-i18n'
 
 export default {
     props: {
@@ -209,6 +210,10 @@ export default {
         nextSpot: Object,
         isLast: Boolean,
         themeConfig: Object
+    },
+    setup() {
+        const { t } = useI18n()
+        return { t }
     },
     data() {
         return {
@@ -221,7 +226,7 @@ export default {
     emits: ['edit', 'copy', 'remove', 'open-map', 'update-data', 'edit-transport', 'navigate'],
     methods: {
         confirmRemove() {
-            if (confirm('確定要刪除這個景點嗎？')) {
+            if (confirm(this.t('planner.delete_spot_confirm'))) {
                 this.$emit('remove')
             }
         },

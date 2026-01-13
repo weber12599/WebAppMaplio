@@ -76,7 +76,7 @@ export const useTripStore = defineStore('trip', () => {
                 activeDay.value = 0
             }
         } catch (err) {
-            console.error('加入行程失敗:', err)
+            console.error('Fail to join trip:', err)
         }
     }
 
@@ -144,10 +144,8 @@ export const useTripStore = defineStore('trip', () => {
     function updateCurrentDayMeta(metaData) {
         if (!currentTrip.value) return
 
-        // 取得當前天數物件
         const dayObj = currentTrip.value.itinerary[activeDay.value]
 
-        // 更新欄位 (使用合併方式以保留 spots)
         currentTrip.value.itinerary[activeDay.value] = {
             ...dayObj,
             ...metaData

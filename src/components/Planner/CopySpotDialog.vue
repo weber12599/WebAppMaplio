@@ -13,11 +13,13 @@
             ]"
         >
             <h3 :class="['text-lg font-bold text-center', themeConfig.dialogTitleClass]">
-                複製景點至其他日期
+                {{ $t('planner.copy_dialog_title') }}
             </h3>
 
             <div class="py-2">
-                <p class="text-xs opacity-60 mb-3 text-center">請選擇要複製到的天數 (可多選)</p>
+                <p class="text-xs opacity-60 mb-3 text-center">
+                    {{ $t('planner.copy_dialog_hint') }}
+                </p>
                 <div
                     class="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scroll"
                 >
@@ -35,7 +37,7 @@
                                   : themeConfig.secondaryBtnClass
                         ]"
                     >
-                        Day {{ index + 1 }}
+                        {{ $t('planner.day_n', { n: index + 1 }) }}
                         <i
                             v-if="selectedDays.includes(index)"
                             class="fa-solid fa-check absolute top-1 right-1 text-[8px]"
@@ -52,7 +54,7 @@
                         themeConfig.dialogCancelBtnClass
                     ]"
                 >
-                    取消
+                    {{ $t('common.cancel') }}
                 </button>
                 <button
                     @click="confirm"
@@ -64,7 +66,7 @@
                             : themeConfig.primaryBtnClass
                     ]"
                 >
-                    確認複製 ({{ selectedDays.length }})
+                    {{ $t('planner.copy_dialog_confirm', { count: selectedDays.length }) }}
                 </button>
             </div>
         </div>
@@ -72,6 +74,8 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n'
+
 export default {
     props: {
         isOpen: Boolean,
@@ -80,6 +84,10 @@ export default {
         themeConfig: Object
     },
     emits: ['close', 'confirm'],
+    setup() {
+        const { t } = useI18n()
+        return { t }
+    },
     data() {
         return {
             selectedDays: []

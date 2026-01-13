@@ -19,7 +19,7 @@
             <input
                 v-model="query"
                 @keydown.enter="$emit('search', query)"
-                placeholder="搜尋地點或貼上網址..."
+                :placeholder="$t('planner.search_placeholder')"
                 :class="[
                     'w-full pl-12 pr-4 py-4 rounded-2xl text-sm outline-none border transition-all duration-500 shadow-sm',
                     themeConfig.inputClass

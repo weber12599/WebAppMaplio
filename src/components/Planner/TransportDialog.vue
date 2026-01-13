@@ -12,7 +12,7 @@
             ]"
         >
             <h3 :class="['text-xl font-black transition-colors', themeConfig.dialogTitleClass]">
-                編輯交通資訊
+                {{ $t('planner.transport_dialog.title') }}
             </h3>
 
             <div class="space-y-4">
@@ -22,7 +22,7 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >交通方式</label
+                        >{{ $t('planner.transport_dialog.label_mode') }}</label
                     >
                     <select
                         v-model="localSpot.travelMode"
@@ -31,10 +31,10 @@
                             themeConfig.dialogInputClass
                         ]"
                     >
-                        <option value="auto">✨ 自動模式</option>
-                        <option value="driving">🚗 點對點開車</option>
-                        <option value="transit">🚌 大眾運輸</option>
-                        <option value="walking">🚶 徒步前往</option>
+                        <option value="auto">{{ $t('planner.transport.auto') }}</option>
+                        <option value="driving">{{ $t('planner.transport.driving') }}</option>
+                        <option value="transit">{{ $t('planner.transport.transit') }}</option>
+                        <option value="walking">{{ $t('planner.transport.walking') }}</option>
                     </select>
                 </div>
 
@@ -45,7 +45,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >預計出發</label
+                            >{{ $t('planner.transport_dialog.label_departure') }}</label
                         >
                         <input
                             type="time"
@@ -62,7 +62,7 @@
                                 'text-[10px] font-black uppercase ml-1 transition-colors',
                                 themeConfig.dialogLabelClass
                             ]"
-                            >預計抵達</label
+                            >{{ $t('planner.transport_dialog.label_arrival') }}</label
                         >
                         <input
                             type="time"
@@ -81,11 +81,11 @@
                             'text-[10px] font-black uppercase ml-1 transition-colors',
                             themeConfig.dialogLabelClass
                         ]"
-                        >交通備註</label
+                        >{{ $t('planner.transport_dialog.label_notes') }}</label
                     >
                     <textarea
                         v-model="localSpot.transportNotes"
-                        placeholder="例如：搭乘 307 號公車、在板橋站轉乘..."
+                        :placeholder="$t('planner.transport_dialog.placeholder_notes')"
                         :class="[
                             'w-full rounded-xl px-4 py-3 text-xs outline-none resize-none h-24 border transition-all',
                             themeConfig.dialogInputClass
@@ -102,7 +102,7 @@
                         themeConfig.dialogCancelBtnClass
                     ]"
                 >
-                    取消
+                    {{ $t('common.cancel') }}
                 </button>
                 <button
                     @click="$emit('confirm', localSpot)"
@@ -111,7 +111,7 @@
                         themeConfig.primaryBtnClass
                     ]"
                 >
-                    儲存資訊
+                    {{ $t('planner.transport_dialog.btn_save') }}
                 </button>
             </div>
         </div>
@@ -126,7 +126,6 @@ export default {
     },
     data() {
         return {
-            // 深拷貝，避免在按下確認前直接修改原始資料
             localSpot: JSON.parse(JSON.stringify(this.modelValue))
         }
     }

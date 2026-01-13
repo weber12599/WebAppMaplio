@@ -51,6 +51,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 
 import AppHeader from './components/Layout/AppHeader.vue'
 import TripCreateForm from './components/Trip/TripCreateForm.vue'
@@ -64,6 +65,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 const tripStore = useTripStore()
+const { t } = useI18n()
 const { activeThemeConfig } = storeToRefs(themeStore)
 
 const showCreateForm = ref(false)
@@ -116,13 +118,13 @@ const handleImportTrip = async () => {
         if (navigator.clipboard && window.isSecureContext) {
             text = await navigator.clipboard.readText()
         } else {
-            text = prompt('請在此貼上行程 JSON：')
+            text = prompt(t('app.import_prompt'))
         }
         if (!text) return
 
         const importedData = JSON.parse(text)
         if (!importedData.name || !Array.isArray(importedData.itinerary)) {
-            throw new Error('無效的行程格式')
+            throw new Error(t('app.import_invalid'))
         }
 
         const newTrip = {
@@ -134,32 +136,29 @@ const handleImportTrip = async () => {
 
         if (authStore.isDemoMode) {
             tripStore.addLocalTrip(newTrip)
-            alert(`成功匯入：${newTrip.name}`)
+            alert(t('app.import_success_local', { name: newTrip.name }))
         } else {
             await saveTripData(newTrip.id, newTrip)
-            alert(`行程「${newTrip.name}」已同步至雲端！`)
+            alert(t('app.import_success_cloud', { name: newTrip.name }))
         }
     } catch (err) {
-        console.error('匯入失敗:', err)
-        alert('匯入失敗，格式錯誤或權限不足')
+        console.error('Import failed:', err)
+        alert(t('app.import_failed'))
     }
 }
 </script>
 
 <style>
-/* 修正日期、時間、數字輸入框在空值時的高度塌陷問題 */
 input[type='date'],
 input[type='time'],
 input[type='number'] {
     -webkit-appearance: none;
     min-width: 0;
     box-sizing: border-box;
-    /* 新增以下兩行：確保最小高度與一般輸入框一致 */
-    min-height: 2.75rem; /* 約 44px，與 py-3 的高度相符 */
+    min-height: 2.75rem;
     line-height: 1.25rem;
 }
 
-/* 針對 iOS 額外處理，確保內容垂直置中 */
 input[type='date'] {
     display: flex;
     align-items: center;

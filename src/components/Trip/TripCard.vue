@@ -16,7 +16,7 @@
                         <i class="fa-regular fa-calendar"></i> {{ trip.startDate }}
                     </span>
                     <span class="opacity-30">·</span>
-                    <span>{{ trip.itinerary.length }} 天</span>
+                    <span>{{ trip.itinerary.length }} {{ $t('common.days') }}</span>
                 </div>
             </div>
             <div class="mt-8 flex justify-between items-center">
@@ -41,15 +41,21 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n'
+
 export default {
     props: {
         trip: Object,
         themeConfig: Object
     },
     emits: ['select', 'delete'],
+    setup() {
+        const { t } = useI18n()
+        return { t }
+    },
     methods: {
         confirmDelete() {
-            if (confirm(`確定要刪除行程「${this.trip.name}」嗎？此動作無法復原。`)) {
+            if (confirm(this.t('trip_card.delete_confirm', { name: this.trip.name }))) {
                 this.$emit('delete', this.trip.id)
             }
         }

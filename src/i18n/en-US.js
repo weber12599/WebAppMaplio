@@ -1,0 +1,147 @@
+export default {
+    common: {
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        loading: 'Loading...',
+        save: 'Save',
+        delete: 'Delete',
+        edit: 'Edit',
+        create: 'Create',
+        close: 'Close',
+        day: 'Day',
+        days: 'Days'
+    },
+    app: {
+        name: 'Maplio',
+        about: 'About Maplio',
+        version_info: 'Version Info',
+        current_version: 'Current Version',
+        env: 'Environment',
+        mode_demo: 'Demo Mode',
+        mode_cloud: 'Cloud Sync Mode',
+        import_json: 'Import JSON from Clipboard',
+        share_trip: 'Share Trip',
+        new_trip: 'New Trip',
+        logout: 'Logout',
+        unknown: 'Unknown',
+        change_theme: 'Change Theme',
+        change_lang: 'Change Language',
+        import_prompt: 'Please paste trip JSON here:',
+        import_invalid: 'Invalid trip format',
+        import_success_local: 'Successfully imported: {name}',
+        import_success_cloud: 'Trip "{name}" synced to cloud!',
+        import_failed: 'Import failed: invalid format or permission denied'
+    },
+    login: {
+        title: 'Maplio',
+        subtitle: 'Plan your next amazing journey',
+        google_login: 'Sign in with Google',
+        demo_login: 'Try Demo (No Login)',
+        demo_desc: 'Data saved locally'
+    },
+    home: {
+        my_trips: 'My Trips',
+        create_new: 'Create New Trip',
+        no_trips: 'No trips yet',
+        start_planning: 'Start planning your first trip!',
+        create_btn: 'Create Trip',
+        local_storage_hint: '(Local Storage)',
+        loading_trips: 'Loading trips...',
+        demo_tip: '(Trips created in Demo Mode are saved locally and not synced to the cloud)'
+    },
+    planner: {
+        loading: 'Loading Trip...',
+        tab_map: 'Map',
+        tab_summary: 'Summary',
+        tab_todo: 'Todo',
+        tab_notes: 'Notes',
+        empty_day_hint: 'No plans for today yet. Try searching for spots!',
+        delete_day_btn: 'Delete Day {day} Itinerary',
+        not_found: 'Trip not found or access denied',
+        confirm_delete_day: 'Are you sure you want to delete the itinerary for Day {day}?',
+        copy_success: 'Successfully copied spots to {count} days!',
+        copy_failed: 'Copy failed, please try again later',
+        share_json: 'Trip JSON Data',
+        share_link: 'Trip Link',
+        share_title: 'Maplio {label}: {tripName}',
+        copied: '{label} copied to clipboard!',
+        copy_fail: 'Copy failed',
+        copy_dialog_title: 'Copy Spot to Other Days',
+        copy_dialog_hint: 'Select days to copy to',
+        copy_dialog_confirm: 'Copy ({count})',
+        day_n: 'Day {n}',
+        day_summary: 'Daily Summary',
+        day_summary_placeholder: 'Notes for today, e.g., weather, outfit, budget...',
+        todo_list: 'To-Do List',
+        add_todo_placeholder: 'Add new item (Press Enter)',
+        todo_indent: 'Indent',
+        todo_outdent: 'Outdent',
+        no_todos: 'No to-do items yet',
+        search_placeholder: 'Search location or paste URL...',
+        unnamed_spot: 'Unnamed Spot',
+        copy_spot_tooltip: 'Copy spot to other days',
+        edit_spot_tooltip: 'Edit',
+        delete_spot_confirm: 'Delete this spot?',
+        nav_tooltip: 'Navigate',
+        nav_disabled: 'Missing coordinates',
+        transport_note_placeholder: '+ Transport notes & time',
+        transport: {
+            auto: '✨ Auto',
+            driving: '🚗 Driving',
+            transit: '🚌 Transit',
+            walking: '🚶 Walking'
+        },
+        transport_dialog: {
+            title: 'Edit Transport Info',
+            label_mode: 'Travel Mode',
+            label_departure: 'Departure',
+            label_arrival: 'Arrival',
+            label_notes: 'Notes',
+            placeholder_notes: 'e.g. Take bus 307, transfer at station...',
+            btn_save: 'Save Info'
+        },
+        share_dialog: {
+            title: 'Share Trip',
+            subtitle: 'Choose how to share',
+            link_title: 'Share Trip Link',
+            link_desc: 'For existing members',
+            json_title: 'Export JSON Data',
+            json_desc: 'For backup or manual import'
+        },
+        spot_dialog: {
+            title: 'Spot Details',
+            label_name: 'Name *',
+            placeholder_name: 'Enter name',
+            label_start_time: 'Start Time',
+            label_end_time: 'End Time',
+            label_notes: 'Notes',
+            placeholder_notes: 'Enter notes here...',
+            label_url: 'Google Map URL',
+            label_coords: 'Coordinates',
+            btn_paste: 'Paste from Clipboard',
+            placeholder_lat: 'Latitude',
+            placeholder_lng: 'Longitude',
+            error_clipboard: 'Cannot read clipboard'
+        }
+    },
+    trip_form: {
+        title: 'Create New Trip',
+        title_local: 'Create New Trip (Local)',
+        label_name: 'Trip Name',
+        placeholder_name: 'e.g. Tokyo 5 Days Trip...',
+        label_date: 'Start Date',
+        label_duration: 'Duration',
+        btn_create: 'Create Trip',
+        btn_creating: 'Creating...',
+        error_incomplete: 'Please fill in all information',
+        error_failed: 'Creation failed, please try again later'
+    },
+    trip_card: {
+        delete_confirm:
+            'Are you sure you want to delete trip "{name}"? This action cannot be undone.'
+    },
+    theme: {
+        muji: 'Light',
+        dark: 'Dark'
+    }
+}
