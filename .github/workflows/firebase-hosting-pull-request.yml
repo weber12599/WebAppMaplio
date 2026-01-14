@@ -46,3 +46,18 @@ jobs:
                   channelId: live
                   projectId: maplio
                   message: 'Release ${{ env.APP_VERSION }}'
+
+            - name: Build Offline Project
+              run: npm run build
+              env:
+                  VITE_APP_MODE: offline
+                  VITE_APP_VERSION: ${{ env.APP_VERSION }}
+
+            - name: Deploy Offline Site
+              uses: FirebaseExtended/action-hosting-deploy@v0
+              with:
+                  repoToken: '${{ secrets.GITHUB_TOKEN }}'
+                  firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAPLIO_OFFLINE }}'
+                  channelId: live
+                  projectId: maplio-offline
+                  message: 'Release Offline ${{ env.APP_VERSION }}'

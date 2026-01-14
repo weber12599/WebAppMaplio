@@ -3,14 +3,25 @@ import { ref, watch } from 'vue'
 import { auth, googleProvider } from '../firebase'
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
 
+const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
+
 export const useAuthStore = defineStore('auth', () => {
     const user = ref(null)
-    const isDemoMode = ref(localStorage.getItem('maplio_is_demo') === 'true')
+    const isDemoMode = ref(isOfflineBuild || localStorage.getItem('maplio_is_demo') === 'true')
     const isAuthReady = ref(false)
 
     let initPromise = null
 
     function initAuthListener() {
+        if (isOfflineBuild) {
+            console.log('maplio-offline build')
+
+            isDemoMode.value = true
+            isAuthReady.value = true
+
+            return Promise.resolve(user.value)
+        }
+
         if (isAuthReady.value) {
             return Promise.resolve(user.value)
         }
@@ -34,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function loginGoogle() {
+        if (isOfflineBuild) return
+
         try {
             const result = await signInWithPopup(auth, googleProvider)
             user.value = result.user
@@ -44,6 +57,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function logout() {
+        if (isOfflineBuild) return
+
         await signOut(auth)
         user.value = null
         isDemoMode.value = false

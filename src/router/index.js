@@ -28,7 +28,14 @@ const router = createRouter({
     ]
 })
 
+const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
+
 router.beforeEach(async (to, from, next) => {
+    if (isOfflineBuild && to.name === 'login') {
+        next({ name: 'home' })
+        return
+    }
+
     const authStore = useAuthStore()
 
     if (!authStore.isAuthReady) {

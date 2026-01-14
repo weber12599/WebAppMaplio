@@ -11,7 +11,22 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
-const app = initializeApp(firebaseConfig)
-export const db = getFirestore(app)
-export const auth = getAuth(app)
-export const googleProvider = new GoogleAuthProvider()
+const isOffline = import.meta.env.VITE_APP_MODE === 'offline' || !firebaseConfig.apiKey
+
+let app = null
+let db = null
+let auth = null
+let googleProvider = null
+
+if (!isOffline) {
+    try {
+        app = initializeApp(firebaseConfig)
+        db = getFirestore(app)
+        auth = getAuth(app)
+        googleProvider = new GoogleAuthProvider()
+    } catch (e) {
+        console.error('Firebase initialization failed:', e)
+    }
+}
+
+export { db, auth, googleProvider }

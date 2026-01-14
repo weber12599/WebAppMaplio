@@ -69,6 +69,7 @@
             </button>
 
             <button
+                v-if="!isOfflineBuild"
                 @click="$emit('logout')"
                 class="opacity-40 hover:opacity-100 hover:text-red-400 transition-all px-2"
                 :title="$t('app.logout')"
@@ -110,6 +111,8 @@
 import { themes } from '../../utils/themeUtils'
 import { useI18n } from 'vue-i18n'
 
+const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
+
 export default {
     emits: ['back', 'update-theme', 'logout', 'import', 'share', 'create'],
     props: [
@@ -132,7 +135,10 @@ export default {
         return { t, locale, handleLanguageChange }
     },
     data() {
-        return { themeOptions: themes }
+        return {
+            isOfflineBuild: isOfflineBuild,
+            themeOptions: themes
+        }
     },
     computed: {
         logoSrc() {
