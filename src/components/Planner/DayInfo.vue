@@ -1,7 +1,7 @@
 <template>
     <div :class="['h-full flex flex-col relative overflow-hidden', themeConfig.appClass]">
         <div
-            class="flex-grow overflow-y-auto p-4 md:p-8 max-w-3xl mx-auto w-full z-10 space-y-4 md:space-y-8"
+            class="flex-grow overflow-y-auto p-4 md:p-8 max-w-3xl mx-auto w-full space-y-4 md:space-y-8"
         >
             <section v-if="mode === 'all' || mode === 'summary'" class="space-y-3">
                 <h3

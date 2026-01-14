@@ -1,7 +1,7 @@
 <template>
     <div
         :class="[
-            'fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-colors duration-500',
+            'fixed inset-0 z-[30000] flex items-center justify-center p-4 transition-colors duration-500',
             themeConfig.dialogOverlayClass
         ]"
     >

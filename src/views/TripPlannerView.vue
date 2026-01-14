@@ -17,7 +17,7 @@
     >
         <aside
             :class="[
-                'w-full md:w-[450px] lg:w-[500px] flex flex-col h-full md:border-r z-20 shrink-0 transition-colors',
+                'w-full md:w-[450px] lg:w-[500px] flex flex-col h-full md:border-r z-[15000] shrink-0 transition-colors',
                 activeThemeConfig.sidebarClass
             ]"
         >
@@ -29,7 +29,7 @@
             >
                 <div
                     :class="[
-                        'absolute top-2 right-2 z-[9999] rounded-md shadow-sm border p-1 flex gap-1',
+                        'absolute top-2 right-2 z-[15000] rounded-md shadow-sm border p-1 flex gap-1',
                         activeThemeConfig.floatingPanelClass
                     ]"
                 >
@@ -184,7 +184,7 @@
         <div class="hidden md:flex relative flex-grow h-full flex-col overflow-hidden">
             <div
                 :class="[
-                    'absolute top-4 right-4 z-[9999] rounded-lg shadow-md p-1 flex items-center border gap-1',
+                    'absolute top-4 right-4 z-[15000] rounded-lg shadow-md p-1 flex items-center border gap-1',
                     activeThemeConfig.floatingPanelClass
                 ]"
             >

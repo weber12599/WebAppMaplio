@@ -4,7 +4,7 @@ export const themes = {
         appClass: 'bg-slate-900 text-slate-100',
         headerClass: 'bg-slate-900/80 border-slate-800 text-white',
         sidebarClass: 'bg-slate-900 border-slate-800',
-        cardClass: 'bg-slate-800/40 border-slate-700/20 text-slate-100',
+        cardClass: 'bg-slate-800 border-slate-700 text-slate-100',
         inputClass: 'bg-slate-800/50 border-transparent text-white focus:border-blue-500/50',
 
         searchIconClass: 'text-slate-600',
@@ -35,14 +35,19 @@ export const themes = {
         tabInactiveClass: 'bg-slate-800 text-slate-500 hover:text-slate-300',
         googleBtnClass: 'bg-slate-700 text-white hover:bg-slate-600',
         secondaryBorderClass: 'border-slate-700',
-        mapTile: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        mapTile: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        headerBtnClass: 'bg-slate-700 text-white hover:bg-slate-600',
+        menuBtnClass:
+            'absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-2xl border overflow-hidden backdrop-blur-md p-1.5 bg-slate-900/95 border-slate-700 text-slate-200',
+        menuItemClass:
+            'w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-3 transition-colors hover:bg-slate-800'
     },
     muji: {
         name: 'muji',
         appClass: 'bg-white text-stone-800',
         headerClass: 'bg-white border-stone-200 text-stone-800',
         sidebarClass: 'bg-white border-stone-200',
-        cardClass: 'bg-white border-stone-200 text-stone-800 shadow-sm',
+        cardClass: 'bg-white border-stone-200 text-stone-800',
         inputClass: 'bg-white border-stone-200 text-stone-800 focus:border-stone-400',
 
         searchIconClass: 'text-stone-400',
@@ -73,6 +78,11 @@ export const themes = {
         tabInactiveClass: 'bg-stone-100 text-stone-400 hover:text-stone-600',
         googleBtnClass: 'bg-white text-stone-800 border border-stone-200',
         secondaryBorderClass: 'border-stone-200',
-        mapTile: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+        mapTile: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        headerBtnClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+        menuBtnClass:
+            'absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-2xl border overflow-hidden backdrop-blur-md p-1.5 bg-white/95 border-stone-100 text-stone-700',
+        menuItemClass:
+            'w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-3 transition-colors hover:bg-stone-100'
     }
 }
