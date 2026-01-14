@@ -23,6 +23,11 @@ export const useTripStore = defineStore('trip', () => {
     })
 
     function initTripsListener() {
+        if (unsubscribeSnapshot.value) {
+            unsubscribeSnapshot.value()
+            unsubscribeSnapshot.value = null
+        }
+
         if (authStore.isDemoMode) {
             const data = localStorage.getItem('maplio_demo_data')
             trips.value = data ? JSON.parse(data) : []
@@ -31,8 +36,6 @@ export const useTripStore = defineStore('trip', () => {
         }
 
         if (authStore.user) {
-            if (unsubscribeSnapshot.value) return
-
             isTripsLoading.value = true
             trips.value = []
 

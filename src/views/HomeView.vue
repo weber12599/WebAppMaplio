@@ -57,7 +57,7 @@ const tripStore = useTripStore()
 const themeStore = useThemeStore()
 const authStore = useAuthStore()
 const { activeThemeConfig } = storeToRefs(themeStore)
-const { user } = storeToRefs(authStore)
+const { user, isDemoMode } = storeToRefs(authStore)
 
 const handleSelectTrip = (trip) => {
     tripStore.selectTrip(trip.id)
@@ -68,15 +68,15 @@ onMounted(async () => {
     if (!authStore.user && !authStore.isDemoMode) {
         await authStore.initAuthListener()
     }
-
-    if (authStore.user || authStore.isDemoMode) {
-        tripStore.initTripsListener()
-    }
 })
 
-watch(user, (newUser) => {
-    if (newUser) {
-        tripStore.initTripsListener()
-    }
-})
+watch(
+    [user, isDemoMode],
+    ([newUser, newIsDemo]) => {
+        if (newUser || newIsDemo) {
+            tripStore.initTripsListener()
+        }
+    },
+    { immediate: true }
+)
 </script>
