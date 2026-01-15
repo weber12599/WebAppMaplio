@@ -40,25 +40,27 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { useI18n } from 'vue-i18n'
 
-export default {
-    props: {
-        trip: Object,
-        themeConfig: Object
+const props = defineProps({
+    trip: {
+        type: Object,
+        required: true
     },
-    emits: ['select', 'delete'],
-    setup() {
-        const { t } = useI18n()
-        return { t }
-    },
-    methods: {
-        confirmDelete() {
-            if (confirm(this.t('trip_card.delete_confirm', { name: this.trip.name }))) {
-                this.$emit('delete', this.trip.id)
-            }
-        }
+    themeConfig: {
+        type: Object,
+        required: true
+    }
+})
+
+const emit = defineEmits(['select', 'delete'])
+
+const { t } = useI18n()
+
+const confirmDelete = () => {
+    if (confirm(t('trip_card.delete_confirm', { name: props.trip.name }))) {
+        emit('delete', props.trip.id)
     }
 }
 </script>
