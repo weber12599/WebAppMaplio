@@ -30,9 +30,55 @@ Maplio is a travel itinerary planning tool built with Vue 3 and OpenStreetMap. I
 
 - 📅 **Itinerary Planning**: Drag-and-drop sorting with daily schedule management.
 - 🗺️ **Map Integration**: Integrated OpenStreetMap with automatic location markers.
-- ☁️ **Cloud Sync**: Google Sign-In support with automatic data saving to Firebase Firestore.
-- ⚡ **Offline Mode**: Supports pure local operation, saving data to browser LocalStorage.
+- ☁️ **Cloud Sync & Collaboration (Online Mode)**: Google Sign-In support with automatic data saving to Firebase Firestore for cross-device synchronization and real-time collaboration.
+- ⚡ **Offline Mode**: Supports pure local operation, saving data to browser LocalStorage for privacy.
 - 📱 **Responsive Design**: Optimized for both desktop and mobile devices.
+
+> **⚠️ About Offline Mode**:
+> This mode means **"Travel data is stored only on your device and not uploaded to the cloud"**, ensuring privacy.
+> However, an **internet connection is still required** to load map tiles (OpenStreetMap).
+
+---
+
+## 🚀 User Guide
+
+We offer multiple ways to use Maplio depending on your needs:
+
+### 1. Try It Now
+
+If you want to experience Maplio immediately without any setup:
+
+- **🌐 Web Demo (Offline Mode Example)**
+  Visit our offline demo hosted on Netlify:
+  🔗 **[Go to Maplio Offline Demo](https://maplio-offline.netlify.app/#/)**
+
+- **📂 Local File**
+  Download the single HTML file to use locally:
+    1.  Go to the **[Releases](../../releases)** page.
+    2.  Download the latest `maplio-offline.zip` and unzip it.
+    3.  Open `index.html` directly in Chrome or Edge.
+        > **⚠️ Note**: Safari restricts local file access (`file://`). For iOS/macOS users, please use the Web Demo above or the Netlify method below.
+
+### 2. Self-Host - Firebase (Recommended)
+
+If you want **Cloud Sync & Collaboration features** (Online Mode) or want to host both Online and Offline versions, Firebase is the best choice.
+
+- **Modes**: ✅ Online Mode (Cloud Sync), ✅ Offline Mode (Hosting)
+- **Pros**: Google Sign-In support, cross-device sync, real-time collaboration, dual-version deployment.
+- **Guide**: Please refer to the **[Project Setup & Deployment](#-project-setup--deployment-quick-start)** section below to set up Firebase and GitHub Actions.
+
+### 3. Self-Host - Netlify (Quick)
+
+If you only need **Offline Mode features** but want to use it on mobile (iOS/Android) or bypass Safari's local file restrictions, Netlify is the fastest free solution.
+
+- **Modes**: ✅ Offline Mode (Offline only)
+- **Pros**: No coding required, mobile-friendly, solves Safari permission issues.
+- **Steps**:
+    1.  Download and unzip `maplio-offline.zip`.
+    2.  Go to **[Netlify Drop](https://app.netlify.com/drop)**.
+    3.  **Drag and Drop** the unzipped folder into the upload area.
+    4.  Done! You now have a personal URL to access your map anywhere. 🚀
+        > **💡 Tip**: After deployment, go to "Site settings" > "Change site name" to customize your URL (e.g., `my-trip-2024.netlify.app`) for easy sharing!
 
 ---
 
@@ -46,45 +92,45 @@ We recommend using **GitHub Actions** for automatic deployment. You only need to
 
 To use cloud synchronization or host the offline version, you need to create a Firebase project first:
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/) and add a new project.
+1.  Go to the [Firebase Console](https://console.firebase.google.com/) and add a new project.
 
-2. **Enable Authentication** (Required for Cloud Sync):
+2.  **Enable Authentication** (Required for Cloud Sync):
     - Go to "Build" > "Authentication" > "Sign-in method".
     - Enable the **Google** provider.
 
-3. **Create Firestore Database** (Required for Cloud Sync):
+3.  **Create Firestore Database** (Required for Cloud Sync):
     - Go to "Build" > "Firestore Database".
     - Create a database (selecting a location close to your users, e.g., `asia-east1`, is recommended).
     - **Set Firestore Rules**:
-      Please copy the following rules to the Rules tab in the Firestore Console to ensure proper permission controls. The following is the recommended Firestore Rules:
+      Copy the following rules to the Rules tab in the Firestore Console to ensure proper permission controls:
 
-        ```javascript
-        service cloud.firestore {
-            match /databases/{database}/documents {
-                match /trips/{tripId} {
-                    // 1. Allow any logged-in user to read a single trip (to check if they are in the members list)
-                    allow get: if request.auth != null;
+    ```javascript
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /trips/{tripId} {
+          // 1. Allow any logged-in user to read a single trip (to check membership)
+          allow get: if request.auth != null;
 
-                    // 2. Only members can list all trips
-                    allow list: if request.auth != null && request.auth.uid in resource.data.members;
+          // 2. Only members can list all trips
+          allow list: if request.auth != null && request.auth.uid in resource.data.members;
 
-                    // 3. Allow updates:
-                    // A: Members can update the trip
-                    // B: Non-members can only add themselves to members (Join Trip feature)
-                    allow update: if request.auth != null && (
-                        request.auth.uid in resource.data.members ||
-                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
-                    );
+          // 3. Allow updates:
+          // A: Members can update the trip
+          // B: Non-members can only add themselves to members (Join Trip feature)
+          allow update: if request.auth != null && (
+            request.auth.uid in resource.data.members ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+          );
 
-                    // 4. Other permissions (Create and Delete)
-                    allow create: if request.auth != null;
-                    allow delete: if request.auth != null && request.auth.uid in resource.data.members;
-                }
-            }
+          // 4. Other permissions (Create and Delete)
+          allow create: if request.auth != null;
+          allow delete: if request.auth != null && request.auth.uid in resource.data.members;
         }
-        ```
+      }
+    }
+    ```
 
-4. **Get Configuration (Config)**:
+4.  **Get Configuration (Config)**:
     - Go to "Project settings" (Gear icon) > "General".
     - Under the "Your apps" section, add a new Web App.
     - Keep the `firebaseConfig` information handy; you will need it in the next step.
@@ -114,11 +160,16 @@ You need to download the Service Account JSON file from Firebase Console (Projec
 - `FIREBASE_SERVICE_ACCOUNT_MAPLIO` (For the Cloud version project)
 - `FIREBASE_SERVICE_ACCOUNT_MAPLIO_OFFLINE` (For the Offline version project)
 
+**Netlify Configuration (For automatic offline web deployment)**
+
+- `NETLIFY_AUTH_TOKEN`: Personal Access Token from [Netlify User Settings](https://app.netlify.com/user/applications#personal-access-tokens).
+- `NETLIFY_SITE_ID`: Your Netlify Site API ID (Found in Site configuration > General > Site details).
+
 ### 3. Trigger Deployment
 
 The deployment workflow is configured for **manual triggering**. You can initiate the process directly from the GitHub interface without needing to run local Git commands:
 
-1. **Run Workflow**:
+1.  **Run Workflow**:
     - Navigate to the **Actions** tab of your GitHub repository.
     - Select **"Deploy to Firebase Hosting (Production)"** from the left sidebar.
     - Click the **"Run workflow"** dropdown button on the right to configure parameters:

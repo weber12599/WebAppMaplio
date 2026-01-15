@@ -30,9 +30,55 @@ Maplio 是一個基於 Vue 3 與 OpenStreetMap 的旅遊行程規劃工具。支
 
 - 📅 **行程規劃**：拖拉式排序，支援每日行程管理。
 - 🗺️ **地圖整合**：整合 OpenStreetMap，自動標記景點位置。
-- ☁️ **雲端同步**：使用 Google 帳號登入，資料自動儲存於 Firebase Firestore。
-- ⚡ **離線模式**：支援純本地操作，資料儲存於瀏覽器 LocalStorage。
+- ☁️ **雲端同步與共編 (Online Mode)**：使用 Google 帳號登入，資料自動儲存於 Firebase Firestore，支援跨裝置同步與多人即時協作。
+- ⚡ **離線模式 (Offline Mode)**：支援純本地操作，資料儲存於瀏覽器 LocalStorage，保障隱私。
 - 📱 **RWD 設計**：支援桌面與行動裝置瀏覽。
+
+> **⚠️ 關於離線模式 (Offline Mode)**：
+> 此模式意指 **「旅遊資料僅儲存於您的設備上，不會上傳至雲端」**。
+> 但由於程式需載入地圖圖資 (OpenStreetMap) ，**使用時仍需保持網路連線**。
+
+---
+
+## 🚀 使用指南 (User Guide)
+
+本專案提供多種使用方式，請根據您的需求選擇適合的情境：
+
+### 1. 立即試用 (Try It Now)
+
+如果您不想進行任何設定，只想立刻體驗 Maplio 的功能：
+
+- **🌐 網頁版 (Web Demo - 離線模式範例)**
+  直接訪問我們託管於 Netlify 的離線版本範例：
+  🔗 **[點擊前往 Maplio Offline Demo](https://maplio-offline.netlify.app/#/)**
+
+- **📂 本地檔案 (Local File)**
+  下載單一 HTML 檔案，無網路也能使用：
+    1.  前往 GitHub 的 **[Releases](../../releases)** 頁面。
+    2.  下載最新版本的 `maplio-offline.zip` 並解壓縮。
+    3.  使用 Chrome 或 Edge 瀏覽器直接開啟 `index.html` 即可。
+        > **⚠️ 注意**：由於瀏覽器安全限制，Safari 無法直接開啟本地檔案。iOS/Mac 使用者請使用上方的網頁版，或參考下方的 Netlify 架站方式。
+
+### 2. 自行架設 - Firebase (推薦)
+
+如果您希望擁有 **完整的雲端同步與共編功能** (Online Mode)，或是想要同時託管線上與離線版本，Firebase 是最佳選擇。
+
+- **適用模式**：✅ Online Mode (雲端同步)、✅ Offline Mode (離線版託管)
+- **優點**：支援 Google 登入、跨裝置同步行程、多人即時協作、同時部署雙版本。
+- **教學**：請參考下方的 **[專案設置與部署](#-專案設置與部署-quick-start)** 章節，設定 Firebase 專案與 GitHub Actions 自動部署。
+
+### 3. 自行架設 - Netlify (快速)
+
+如果您只需要 **離線版功能**，但希望在手機 (iOS/Android) 上方便開啟，或是想解決 Safari 本地檔案的限制，Netlify 是最快速的免費方案。
+
+- **適用模式**：✅ Offline Mode (僅限離線版)
+- **優點**：無需寫程式、支援手機瀏覽、解決 Safari 權限問題。
+- **步驟**：
+    1.  下載並解壓縮 `maplio-offline.zip`。
+    2.  開啟 **[Netlify Drop](https://app.netlify.com/drop)** 網頁。
+    3.  將解壓縮出來的資料夾 **直接拖曳 (Drag & Drop)** 到網頁上傳區。
+    4.  完成！您將獲得一個專屬網址，隨時隨地都能開啟您的地圖。🚀
+        > **💡 小撇步**：部署完成後，您可以點擊 "Site settings" > "Change site name"，將網址改成您喜歡的 subdomain 名稱（例如 `my-trip-2024.netlify.app`），方便與旅伴分享！
 
 ---
 
@@ -56,34 +102,33 @@ Maplio 是一個基於 Vue 3 與 OpenStreetMap 的旅遊行程規劃工具。支
     - 進入 "Build" > "Firestore Database"。
     - 建立資料庫（建議選擇距離使用者較近的位置，如 `asia-east1`）。
     - **設定 Firestore Rules**：
-      請將以下規則複製到 Firestore Console 的 Rules 分頁中，以確保權限控管正常運作，下方為建議的 Firestore Rules：
+      請將以下規則複製到 Firestore Console 的 Rules 分頁中，以確保權限控管正常運作：
 
-        ```javascript
-          service cloud.firestore {
-              match /databases/{database}/documents {
-                  match /trips/{tripId} {
-                      // 1. 允許任何已登入使用者讀取單一行程 (為了檢查是否已在成員名單中)
-                      allow get: if request.auth != null;
+    ```javascript
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /trips/{tripId} {
+          // 1. 允許任何已登入使用者讀取單一行程 (為了檢查是否已在成員名單中)
+          allow get: if request.auth != null;
 
-                      // 2. 只有成員可以列出 (list) 所有行程
-                      allow list: if request.auth != null && request.auth.uid in resource.data.members;
+          // 2. 只有成員可以列出 (list) 所有行程
+          allow list: if request.auth != null && request.auth.uid in resource.data.members;
 
-                      // 3. 允許更新：
-                      // A: 成員可更新行程
-                      // B: 非成員僅可將自己加入 members (加入行程功能)
-                      allow update: if request.auth != null && (
-                      request.auth.uid in resource.data.members ||
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
-                      );
+          // 3. 允許更新：
+          // A: 成員可更新行程
+          // B: 非成員僅可將自己加入 members (加入行程功能)
+          allow update: if request.auth != null && (
+            request.auth.uid in resource.data.members ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+          );
 
-                      // 4. 其他權限 (建立與刪除)
-                      allow create: if request.auth != null;
-                      allow delete: if request.auth != null && request.auth.uid in resource.data.members;
-                  }
-              }
-
+          // 4. 其他權限 (建立與刪除)
+          allow create: if request.auth != null;
+          allow delete: if request.auth != null && request.auth.uid in resource.data.members;
         }
-        ```
+      }
+    }
+    ```
 
 4.  **取得配置 (Config)**：
     - 進入 "Project settings" (齒輪圖示) > "General"。
@@ -115,11 +160,16 @@ Maplio 是一個基於 Vue 3 與 OpenStreetMap 的旅遊行程規劃工具。支
 - `FIREBASE_SERVICE_ACCOUNT_MAPLIO` (對應雲端版本專案)
 - `FIREBASE_SERVICE_ACCOUNT_MAPLIO_OFFLINE` (對應離線版本專案)
 
+**Netlify 配置 (用於自動更新離線網頁版)**
+
+- `NETLIFY_AUTH_TOKEN`: 前往 [Netlify User Settings](https://app.netlify.com/user/applications#personal-access-tokens) 產生的 Personal Access Token。
+- `NETLIFY_SITE_ID`: 您的 Netlify 網站 API ID（可在 Site configuration > General > Site details 中找到）。
+
 ### 3. 觸發部署
 
 目前的部署流程設定為**手動觸發**。您無需在本地端執行 Git 指令，直接透過 GitHub 網頁介面即可操作：
 
-1. **執行 Workflow**：
+1.  **執行 Workflow**：
     - 前往 GitHub 專案頁面的 **Actions** 分頁。
     - 在左側選單點選 **"Deploy to Firebase Hosting (Production)"**。
     - 點擊右側的 **"Run workflow"** 按鈕並設定參數：
