@@ -98,73 +98,71 @@
     </div>
 </template>
 
-<script>
-import { db } from '../../firebase'
-import { collection, addDoc } from 'firebase/firestore'
-import { useTripStore } from '../../stores/trip'
+<script setup>
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { collection, addDoc } from 'firebase/firestore'
+import { db } from '../../firebase'
+import { useTripStore } from '../../stores/trip'
 
-export default {
-    props: {
-        isDemo: Boolean,
-        user: Object,
-        themeConfig: Object
-    },
-    emits: ['cancel', 'created'],
-    setup() {
-        const tripStore = useTripStore()
-        const { t } = useI18n()
-        return { tripStore, t }
-    },
-    data() {
-        return {
-            newTrip: {
-                name: '',
-                startDate: '',
-                duration: 1
-            },
-            isSubmitting: false
+const props = defineProps({
+    isDemo: Boolean,
+    user: Object,
+    themeConfig: {
+        type: Object,
+        required: true
+    }
+})
+
+const emit = defineEmits(['cancel', 'created'])
+
+const { t } = useI18n()
+const tripStore = useTripStore()
+
+const isSubmitting = ref(false)
+const newTrip = ref({
+    name: '',
+    startDate: '',
+    duration: 1
+})
+
+const resetForm = () => {
+    newTrip.value = { name: '', startDate: '', duration: 1 }
+}
+
+const handleCreate = async () => {
+    if (!newTrip.value.name || !newTrip.value.startDate) {
+        return alert(t('trip_form.error_incomplete'))
+    }
+
+    isSubmitting.value = true
+    try {
+        const itinerary = Array.from({ length: newTrip.value.duration }, () => ({
+            spots: []
+        }))
+
+        const tripData = {
+            name: newTrip.value.name,
+            startDate: newTrip.value.startDate,
+            members: [props.user ? props.user.uid : 'demo-user'],
+            itinerary,
+            createdAt: props.isDemo ? new Date().toISOString() : new Date()
         }
-    },
-    methods: {
-        async handleCreate() {
-            if (!this.newTrip.name || !this.newTrip.startDate) {
-                return alert(this.t('trip_form.error_incomplete'))
-            }
 
-            this.isSubmitting = true
-            try {
-                const itinerary = Array.from({ length: this.newTrip.duration }, () => ({
-                    spots: []
-                }))
-
-                const tripData = {
-                    name: this.newTrip.name,
-                    startDate: this.newTrip.startDate,
-                    members: [this.user ? this.user.uid : 'demo-user'],
-                    itinerary,
-                    createdAt: this.isDemo ? new Date().toISOString() : new Date()
-                }
-
-                if (this.isDemo) {
-                    tripData.id = 'demo_' + Date.now()
-                    this.tripStore.addLocalTrip(tripData)
-                } else {
-                    await addDoc(collection(db, 'trips'), tripData)
-                }
-
-                this.$emit('created')
-                this.resetForm()
-            } catch (error) {
-                console.error('Fail to create a trip:', error)
-                alert(this.t('trip_form.error_failed'))
-            } finally {
-                this.isSubmitting = false
-            }
-        },
-        resetForm() {
-            this.newTrip = { name: '', startDate: '', duration: 1 }
+        if (props.isDemo) {
+            tripData.id = 'demo_' + Date.now()
+            tripStore.addLocalTrip(tripData)
+        } else {
+            await addDoc(collection(db, 'trips'), tripData)
         }
+
+        emit('created')
+        resetForm()
+    } catch (error) {
+        console.error('Fail to create a trip:', error)
+        alert(t('trip_form.error_failed'))
+    } finally {
+        isSubmitting.value = false
     }
 }
 </script>
