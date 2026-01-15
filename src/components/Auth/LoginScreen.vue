@@ -16,7 +16,7 @@
                         class="inline-flex items-center justify-center w-24 h-24 mb-4 transition-all duration-500"
                     >
                         <img
-                            src="/logos/favicon.svg"
+                            :src="favicon"
                             alt="Maplio Logo"
                             class="w-full h-full object-contain drop-shadow-2xl"
                         />
@@ -68,6 +68,8 @@
 </template>
 
 <script setup>
+import favicon from '@/assets/logos/favicon.svg'
+
 defineProps({
     themeConfig: {
         type: Object,

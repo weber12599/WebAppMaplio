@@ -257,6 +257,8 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { themes } from '../../utils/themeUtils'
+import logoDefault from '@/assets/logos/logo.svg'
+import logoDark from '@/assets/logos/logo-dark.svg'
 
 const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
 
@@ -286,7 +288,7 @@ const isMenuOpen = ref(false)
 const subMenu = ref(null)
 
 const logoSrc = computed(() => {
-    return props.currentTheme === 'muji' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
+    return props.currentTheme === 'muji' ? logoDefault : logoDark
 })
 
 const toggleMenu = () => {

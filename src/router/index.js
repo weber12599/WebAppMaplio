@@ -1,12 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const HomeView = () => import('../views/HomeView.vue')
 const TripPlannerView = () => import('../views/TripPlannerView.vue')
 const LoginView = () => import('../views/LoginView.vue')
 
+const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
+
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: isOfflineBuild ? createWebHashHistory() : createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
             path: '/',
@@ -27,8 +29,6 @@ const router = createRouter({
         }
     ]
 })
-
-const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
 
 router.beforeEach(async (to, from, next) => {
     if (isOfflineBuild && to.name === 'login') {
