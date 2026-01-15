@@ -200,101 +200,107 @@
     </div>
 </template>
 
-<script>
-import { formatNote } from '@/utils/stringUtils'
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatNote } from '@/utils/stringUtils'
 
-export default {
-    props: {
-        spot: Object,
-        nextSpot: Object,
-        isLast: Boolean,
-        themeConfig: Object
-    },
-    setup() {
-        const { t } = useI18n()
-        return { t }
-    },
-    data() {
-        return {
-            isExpanded: false,
-            showExpandBtn: false,
-            resizeObserver: null,
-            formatNote: formatNote
-        }
-    },
-    emits: ['edit', 'copy', 'remove', 'open-map', 'update-data', 'edit-transport', 'navigate'],
-    methods: {
-        confirmRemove() {
-            if (confirm(this.t('planner.delete_spot_confirm'))) {
-                this.$emit('remove')
-            }
-        },
-        toggleExpand() {
-            this.isExpanded = !this.isExpanded
-        },
-        checkOverflow() {
-            const el = this.$refs.noteRef
-            if (!el) return
+const props = defineProps({
+    spot: Object,
+    nextSpot: Object,
+    isLast: Boolean,
+    themeConfig: Object
+})
 
-            if (!this.isExpanded) {
-                this.showExpandBtn = el.scrollHeight > el.clientHeight + 1
-            } else {
-                const style = window.getComputedStyle(el)
-                let lineHeight = parseFloat(style.lineHeight)
-                if (isNaN(lineHeight)) {
-                    const fontSize = parseFloat(style.fontSize) || 16
-                    lineHeight = fontSize * 1.2
-                }
+const emit = defineEmits([
+    'edit',
+    'copy',
+    'remove',
+    'open-map',
+    'update-data',
+    'edit-transport',
+    'navigate'
+])
 
-                const maxAllowedHeight = lineHeight * 2
-                this.showExpandBtn = el.scrollHeight > maxAllowedHeight + 1
-            }
-        }
-    },
-    watch: {
-        'spot.notes': {
-            handler() {
-                this.isExpanded = false
-                this.$nextTick(() => {
-                    this.checkOverflow()
-                    if (this.showExpandBtn) {
-                        this.isExpanded = true
-                    }
-                })
-            },
-            flush: 'post'
-        }
-    },
-    mounted() {
-        this.$nextTick(() => {
-            setTimeout(() => {
-                this.checkOverflow()
-                this.isExpanded = true
-            }, 50)
-        })
+const { t } = useI18n()
 
-        if (this.$refs.noteRef) {
-            this.resizeObserver = new ResizeObserver(() => {
-                requestAnimationFrame(() => this.checkOverflow())
-            })
-            this.resizeObserver.observe(this.$refs.noteRef)
-        }
-    },
-    beforeUnmount() {
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect()
-        }
-    },
-    computed: {
-        canNavigate() {
-            if (this.isLast || !this.nextSpot) return false
-            const hasStartCoord = this.spot.lat && this.spot.lng
-            const hasEndCoord = this.nextSpot.lat && this.nextSpot.lng
-            return hasStartCoord && hasEndCoord
-        }
+const isExpanded = ref(false)
+const showExpandBtn = ref(false)
+const noteRef = ref(null)
+let resizeObserver = null
+
+const canNavigate = computed(() => {
+    if (props.isLast || !props.nextSpot) return false
+    const hasStartCoord = props.spot.lat && props.spot.lng
+    const hasEndCoord = props.nextSpot.lat && props.nextSpot.lng
+    return !!(hasStartCoord && hasEndCoord)
+})
+
+const confirmRemove = () => {
+    if (confirm(t('planner.delete_spot_confirm'))) {
+        emit('remove')
     }
 }
+
+const toggleExpand = () => {
+    isExpanded.value = !isExpanded.value
+}
+
+const checkOverflow = () => {
+    const el = noteRef.value
+    if (!el) return
+
+    if (!isExpanded.value) {
+        showExpandBtn.value = el.scrollHeight > el.clientHeight + 1
+    } else {
+        const style = window.getComputedStyle(el)
+        let lineHeight = parseFloat(style.lineHeight)
+        if (isNaN(lineHeight)) {
+            const fontSize = parseFloat(style.fontSize) || 16
+            lineHeight = fontSize * 1.2
+        }
+
+        const maxAllowedHeight = lineHeight * 2
+        showExpandBtn.value = el.scrollHeight > maxAllowedHeight + 1
+    }
+}
+
+watch(
+    () => props.spot.notes,
+    () => {
+        isExpanded.value = false
+        nextTick(() => {
+            checkOverflow()
+            if (showExpandBtn.value) {
+                isExpanded.value = true
+            }
+        })
+    },
+    { flush: 'post' }
+)
+
+onMounted(() => {
+    nextTick(() => {
+        setTimeout(() => {
+            checkOverflow()
+            isExpanded.value = true
+        }, 50)
+    })
+
+    if (noteRef.value) {
+        resizeObserver = new ResizeObserver(() => {
+            requestAnimationFrame(() => checkOverflow())
+        })
+        resizeObserver.observe(noteRef.value)
+    }
+})
+
+onUnmounted(() => {
+    if (resizeObserver) {
+        resizeObserver.disconnect()
+        resizeObserver = null
+    }
+})
 </script>
 
 <style scoped>
