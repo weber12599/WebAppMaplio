@@ -13,6 +13,11 @@ on:
                 type: boolean
                 required: true
                 default: true
+            deploy_netlify:
+                description: 'Deploy offline (Netlify)'
+                type: boolean
+                required: true
+                default: true
             version:
                 description: 'Version (e.g., v1.0.0)'
                 required: true
@@ -55,6 +60,7 @@ jobs:
                   # Initialize status
                   ONLINE_OK="true"
                   OFFLINE_OK="true"
+                  NETLIFY_OK="true"
 
                   echo "🔍 Starting Secret Validation..."
 
@@ -105,11 +111,24 @@ jobs:
                     fi
                   fi
 
+                  # --- C. Check Netlify Required Secrets ---
+                  if [ "${{ inputs.deploy_netlify }}" == "true" ]; then
+                    if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+                        echo "❌ Missing Secret: NETLIFY_AUTH_TOKEN"
+                        NETLIFY_OK="false"
+                    fi
+                    if [ -z "${{ secrets.NETLIFY_SITE_ID }}" ]; then
+                        echo "❌ Missing Secret: NETLIFY_SITE_ID"
+                        NETLIFY_OK="false"
+                    fi
+                  fi
+
                   # Output results for subsequent steps
                   echo "online_ok=$ONLINE_OK" >> $GITHUB_OUTPUT
                   echo "offline_ok=$OFFLINE_OK" >> $GITHUB_OUTPUT
+                  echo "netlify_ok=$NETLIFY_OK" >> $GITHUB_OUTPUT
 
-                  echo "✅ Validation Complete. Online: $ONLINE_OK, Offline: $OFFLINE_OK"
+                  echo "✅ Validation Complete. Online: $ONLINE_OK, Offline: $OFFLINE_OK, Netlify: $NETLIFY_OK"
 
             # ----------------------------------------------------------------
             # 3. Online Build & Deployment (Firebase)
@@ -141,10 +160,10 @@ jobs:
             - name: Skip Online Deploy
               if: ${{ inputs.deploy_online == true && steps.check_secrets.outputs.online_ok == 'false' }}
               run: |
-                  echo "⚠️ Online deployment skipped due to missing secrets."
+                  echo "⚠️ Firebase online deployment skipped due to missing secrets."
 
             # ----------------------------------------------------------------
-            # 4. Offline Build & Deployment (Firebase / GitHub Release Zip)
+            # 4. Offline Build & Deployment (Firebase / Netlify / GitHub Release Zip)
             # ----------------------------------------------------------------
             - name: Build for Offline
               run: npm run build:offline
@@ -165,7 +184,26 @@ jobs:
             - name: Skip Offline Deploy
               if: ${{ inputs.deploy_offline == true && steps.check_secrets.outputs.offline_ok == 'false' }}
               run: |
-                  echo "⚠️ Offline deployment skipped due to missing secrets."
+                  echo "⚠️ Firebase offline deployment skipped due to missing secrets."
+
+            - name: Offline Deploy to Netlify
+              if: ${{ inputs.deploy_netlify == true && steps.check_secrets.outputs.netlify_ok == 'true' }}
+              uses: nwtgck/actions-netlify@v3.0
+              with:
+                  publish-dir: './dist-offline'
+                  production-branch: main
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  deploy-message: 'Deploy v${{ env.APP_VERSION }} from GitHub Actions'
+                  enable-pull-request-comment: false
+                  enable-commit-comment: false
+                  overwrites-pull-request-comment: false
+              env:
+                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+            - name: Skip Netlify Deploy
+              if: ${{ inputs.deploy_netlify == true && steps.check_secrets.outputs.netlify_ok == 'false' }}
+              run: echo "⚠️ Netlify offline deployment skipped due to missing secrets."
 
             - name: Zip Offline Artifact
               run: |
