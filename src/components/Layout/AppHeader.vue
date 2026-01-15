@@ -30,7 +30,7 @@
                 @click="$emit('share')"
                 :class="[
                     'flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all active:scale-95',
-                    themeOptions[currentTheme].headerBtnClass
+                    themes[currentTheme].headerBtnClass
                 ]"
                 :title="$t('app.share_trip')"
             >
@@ -43,7 +43,7 @@
                 @click="$emit('create')"
                 :class="[
                     'flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all active:scale-95',
-                    themeOptions[currentTheme].headerBtnClass
+                    themes[currentTheme].headerBtnClass
                 ]"
             >
                 <i class="fa-solid fa-plus"></i>
@@ -102,7 +102,7 @@
                 >
                     <div
                         v-if="isMenuOpen"
-                        :class="[themeOptions[currentTheme].menuBtnClass, 'z-[20002]']"
+                        :class="[themes[currentTheme].menuBtnClass, 'z-[20002]']"
                         class="overflow-hidden"
                         @click.stop
                     >
@@ -118,7 +118,7 @@
                         <button
                             v-if="!currentTrip"
                             @click="handleAction('import')"
-                            :class="themeOptions[currentTheme].menuItemClass"
+                            :class="themes[currentTheme].menuItemClass"
                         >
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-file-import w-5 text-center"></i>
@@ -128,7 +128,7 @@
 
                         <button
                             @click="toggleSubMenu('theme')"
-                            :class="themeOptions[currentTheme].menuItemClass"
+                            :class="themes[currentTheme].menuItemClass"
                             class="justify-between group"
                         >
                             <div class="flex items-center gap-3">
@@ -156,34 +156,24 @@
                             :class="currentTheme === 'dark' ? 'bg-slate-800' : 'bg-stone-50'"
                         >
                             <button
-                                @click="setTheme('muji')"
+                                v-for="theme in themes"
+                                :key="theme.name"
+                                @click="setTheme(theme.name)"
                                 :class="[
                                     'w-full text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors',
-                                    currentTheme === 'muji'
+                                    currentTheme === theme.name
                                         ? 'font-bold text-blue-500'
                                         : 'opacity-70 hover:opacity-100'
                                 ]"
                             >
-                                <span>{{ $t('theme.muji') }}</span>
-                                <i v-if="currentTheme === 'muji'" class="fa-solid fa-check"></i>
-                            </button>
-                            <button
-                                @click="setTheme('dark')"
-                                :class="[
-                                    'w-full text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors',
-                                    currentTheme === 'dark'
-                                        ? 'font-bold text-blue-500'
-                                        : 'opacity-70 hover:opacity-100'
-                                ]"
-                            >
-                                <span>{{ $t('theme.dark') }}</span>
-                                <i v-if="currentTheme === 'dark'" class="fa-solid fa-check"></i>
+                                <span>{{ $t(`theme.${theme.name}`) }}</span>
+                                <i v-if="currentTheme === theme.name" class="fa-solid fa-check"></i>
                             </button>
                         </div>
 
                         <button
                             @click="toggleSubMenu('lang')"
-                            :class="themeOptions[currentTheme].menuItemClass"
+                            :class="themes[currentTheme].menuItemClass"
                             class="justify-between group"
                         >
                             <div class="flex items-center gap-3">
@@ -202,28 +192,27 @@
                             :class="currentTheme === 'dark' ? 'bg-slate-800' : 'bg-stone-50'"
                         >
                             <button
-                                @click="setLang('zh-TW')"
+                                v-for="meta in [
+                                    {
+                                        value: 'zh-TW',
+                                        label: '繁體中文'
+                                    },
+                                    {
+                                        value: 'en-US',
+                                        label: 'English'
+                                    }
+                                ]"
+                                :key="meta.value"
+                                @click="setLang(meta.value)"
                                 :class="[
                                     'w-full text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors',
-                                    locale === 'zh-TW'
+                                    locale === meta.value
                                         ? 'font-bold text-blue-500'
                                         : 'opacity-70 hover:opacity-100'
                                 ]"
                             >
-                                <span>繁體中文</span>
-                                <i v-if="locale === 'zh-TW'" class="fa-solid fa-check"></i>
-                            </button>
-                            <button
-                                @click="setLang('en-US')"
-                                :class="[
-                                    'w-full text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors',
-                                    locale === 'en-US'
-                                        ? 'font-bold text-blue-500'
-                                        : 'opacity-70 hover:opacity-100'
-                                ]"
-                            >
-                                <span>English</span>
-                                <i v-if="locale === 'en-US'" class="fa-solid fa-check"></i>
+                                <span>{{ meta.label }}</span>
+                                <i v-if="locale === meta.value" class="fa-solid fa-check"></i>
                             </button>
                         </div>
 
@@ -231,7 +220,7 @@
 
                         <button
                             @click="handleAction('info')"
-                            :class="themeOptions[currentTheme].menuItemClass"
+                            :class="themes[currentTheme].menuItemClass"
                         >
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-circle-info w-5 text-center"></i>
@@ -248,7 +237,7 @@
                             v-if="!isOfflineBuild"
                             @click="handleAction('logout')"
                             :class="[
-                                themeOptions[currentTheme].menuItemClass,
+                                themes[currentTheme].menuItemClass,
                                 'text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400'
                             ]"
                         >
@@ -264,82 +253,86 @@
     </header>
 </template>
 
-<script>
-import { themes } from '../../utils/themeUtils'
+<script setup>
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { themes } from '../../utils/themeUtils'
 
 const isOfflineBuild = import.meta.env.VITE_APP_MODE === 'offline'
 
-export default {
-    emits: ['back', 'update-theme', 'logout', 'import', 'share', 'create', 'change-lang'],
-    props: [
-        'user',
-        'currentTrip',
-        'isDemo',
-        'showAddButton',
-        'currentTheme',
-        'themeClass',
-        'appVersion'
-    ],
-    setup() {
-        const { t, locale } = useI18n()
-        return { t, locale }
-    },
-    data() {
-        return {
-            isOfflineBuild: isOfflineBuild,
-            themeOptions: themes,
-            isMenuOpen: false,
-            subMenu: null
-        }
-    },
-    computed: {
-        logoSrc() {
-            return this.currentTheme === 'muji' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
-        }
-    },
-    methods: {
-        toggleMenu() {
-            this.isMenuOpen = !this.isMenuOpen
-            if (!this.isMenuOpen) {
-                this.subMenu = null
-            }
-        },
-        toggleSubMenu(menu) {
-            this.subMenu = this.subMenu === menu ? null : menu
-        },
-        setTheme(themeName) {
-            this.$emit('update-theme', themeName)
-        },
-        setLang(langCode) {
-            this.locale = langCode
-            localStorage.setItem('maplio_locale', langCode)
-        },
-        showVersionInfo() {
-            const mode = this.isDemo ? this.t('app.mode_demo') : this.t('app.mode_cloud')
-            const unknown = this.t('app.unknown')
-            alert(
-                `Maplio ${this.t('app.version_info')}\n${this.t('app.current_version')}: ${
-                    this.appVersion || unknown
-                }\n${this.t('app.env')}: ${mode}`
-            )
-        },
-        handleAction(action) {
-            switch (action) {
-                case 'import':
-                    this.$emit('import')
-                    this.isMenuOpen = false
-                    break
-                case 'info':
-                    this.showVersionInfo()
-                    this.isMenuOpen = false
-                    break
-                case 'logout':
-                    this.$emit('logout')
-                    this.isMenuOpen = false
-                    break
-            }
-        }
+const props = defineProps({
+    user: Object,
+    currentTrip: Object,
+    isDemo: Boolean,
+    showAddButton: Boolean,
+    currentTheme: String,
+    themeClass: String,
+    appVersion: String
+})
+
+const emit = defineEmits([
+    'back',
+    'update-theme',
+    'logout',
+    'import',
+    'share',
+    'create',
+    'change-lang'
+])
+
+const { t, locale } = useI18n()
+
+const isMenuOpen = ref(false)
+const subMenu = ref(null)
+
+const logoSrc = computed(() => {
+    return props.currentTheme === 'muji' ? '/logos/logo.svg?v=2' : '/logos/logo-dark.svg?v=2'
+})
+
+const toggleMenu = () => {
+    isMenuOpen.value = !isMenuOpen.value
+    if (!isMenuOpen.value) {
+        subMenu.value = null
+    }
+}
+
+const toggleSubMenu = (menu) => {
+    subMenu.value = subMenu.value === menu ? null : menu
+}
+
+const setTheme = (themeName) => {
+    emit('update-theme', themeName)
+}
+
+const setLang = (langCode) => {
+    locale.value = langCode
+    localStorage.setItem('maplio_locale', langCode)
+}
+
+const showVersionInfo = () => {
+    const mode = props.isDemo ? t('app.mode_demo') : t('app.mode_cloud')
+    const unknown = t('app.unknown')
+    alert(
+        `Maplio ${t('app.version_info')}\n${t('app.current_version')}: ${
+            props.appVersion || unknown
+        }\n${t('app.env')}: ${mode}`
+    )
+}
+
+const handleAction = (action) => {
+    switch (action) {
+        case 'import':
+            emit('import')
+            isMenuOpen.value = false
+            break
+        case 'info':
+            showVersionInfo()
+            isMenuOpen.value = false
+            break
+        case 'logout':
+            emit('logout')
+            isMenuOpen.value = false
+            break
     }
 }
 </script>
