@@ -73,44 +73,41 @@
     </div>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, watch } from 'vue'
 
-export default {
-    props: {
-        isOpen: Boolean,
-        totalDays: Number,
-        currentDay: Number,
-        themeConfig: Object
-    },
-    emits: ['close', 'confirm'],
-    setup() {
-        const { t } = useI18n()
-        return { t }
-    },
-    data() {
-        return {
-            selectedDays: []
-        }
-    },
-    watch: {
-        isOpen(val) {
-            if (val) {
-                this.selectedDays = []
-            }
-        }
-    },
-    methods: {
-        toggleDay(idx) {
-            if (idx === this.currentDay) return
-            const pos = this.selectedDays.indexOf(idx)
-            if (pos > -1) this.selectedDays.splice(pos, 1)
-            else this.selectedDays.push(idx)
-        },
-        confirm() {
-            this.$emit('confirm', this.selectedDays)
+const props = defineProps({
+    isOpen: Boolean,
+    totalDays: Number,
+    currentDay: Number,
+    themeConfig: Object
+})
+
+const emit = defineEmits(['close', 'confirm'])
+
+const selectedDays = ref([])
+
+watch(
+    () => props.isOpen,
+    (val) => {
+        if (val) {
+            selectedDays.value = []
         }
     }
+)
+
+const toggleDay = (idx) => {
+    if (idx === props.currentDay) return
+    const pos = selectedDays.value.indexOf(idx)
+    if (pos > -1) {
+        selectedDays.value.splice(pos, 1)
+    } else {
+        selectedDays.value.push(idx)
+    }
+}
+
+const confirm = () => {
+    emit('confirm', selectedDays.value)
 }
 </script>
 
