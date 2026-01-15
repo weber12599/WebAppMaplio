@@ -116,6 +116,7 @@
                             :themeConfig="activeThemeConfig"
                             @search="handleSearch"
                             @select="handleLocationSelect"
+                            @clear="searchResults = []"
                         />
 
                         <draggable

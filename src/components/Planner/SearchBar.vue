@@ -1,30 +1,45 @@
 <template>
     <div class="relative">
         <div class="relative">
-            <i
-                v-if="!loading"
-                :class="[
-                    'fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 transition-colors',
-                    themeConfig.searchIconClass
-                ]"
-            ></i>
-            <i
-                v-else
-                :class="[
-                    'fa-solid fa-circle-notch fa-spin absolute left-4 top-1/2 -translate-y-1/2 transition-colors',
-                    themeConfig.loadingIconClass
-                ]"
-            ></i>
+            <div
+                class="absolute left-0 top-0 h-full w-12 flex items-center justify-center pointer-events-none z-10"
+            >
+                <i
+                    v-if="!loading"
+                    :class="[
+                        'fa-solid fa-magnifying-glass transition-colors',
+                        themeConfig.searchIconClass
+                    ]"
+                ></i>
+                <i
+                    v-else
+                    :class="[
+                        'fa-solid fa-circle-notch fa-spin transition-colors',
+                        themeConfig.loadingIconClass
+                    ]"
+                ></i>
+            </div>
 
             <input
                 v-model="query"
                 @keydown.enter="$emit('search', query)"
                 :placeholder="$t('planner.search_placeholder')"
                 :class="[
-                    'w-full pl-12 pr-4 py-4 rounded-2xl text-sm outline-none border transition-all duration-500 shadow-sm',
+                    'w-full pl-12 pr-12 py-4 rounded-2xl text-sm outline-none border transition-all duration-500 shadow-sm',
                     themeConfig.inputClass
                 ]"
             />
+
+            <button
+                v-if="query"
+                @click="clear"
+                :class="[
+                    'absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-black/5 active:scale-90',
+                    themeConfig.searchIconClass
+                ]"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         <div
@@ -54,20 +69,25 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        results: Array,
-        loading: Boolean,
-        themeConfig: Object
-    },
-    data() {
-        return { query: '' }
-    },
-    methods: {
-        clear() {
-            this.query = ''
-        }
-    }
+<script setup>
+import { ref } from 'vue'
+
+defineProps({
+    results: Array,
+    loading: Boolean,
+    themeConfig: Object
+})
+
+const emit = defineEmits(['search', 'select', 'clear'])
+
+const query = ref('')
+
+const clear = () => {
+    query.value = ''
+    emit('clear')
 }
+
+defineExpose({
+    clear
+})
 </script>
