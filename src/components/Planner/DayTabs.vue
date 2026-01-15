@@ -29,41 +29,38 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { watch, nextTick } from 'vue'
 import { getDayDate } from '../../utils/dateUtils'
 
-export default {
-    props: {
-        itinerary: Array,
-        activeDay: Number,
-        startDate: String,
-        themeConfig: Object
-    },
-    emits: ['update:activeDay', 'add-day'],
-    methods: {
-        formatDate(idx) {
-            return getDayDate(this.startDate, idx)
-        }
-    },
-    watch: {
-        activeDay: {
-            async handler(newVal) {
-                this.$nextTick(() => {
-                    const activeTab = document.getElementById(`day-tab-${newVal}`)
-                    if (activeTab) {
-                        activeTab.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'nearest',
-                            inline: 'center'
-                        })
-                    }
-                })
-            },
-            immediate: true,
-            deep: false
-        }
-    }
+const props = defineProps({
+    itinerary: Array,
+    activeDay: Number,
+    startDate: String,
+    themeConfig: Object
+})
+
+defineEmits(['update:activeDay', 'add-day'])
+
+const formatDate = (idx) => {
+    return getDayDate(props.startDate, idx)
 }
+
+watch(
+    () => props.activeDay,
+    async (newVal) => {
+        await nextTick()
+        const activeTab = document.getElementById(`day-tab-${newVal}`)
+        if (activeTab) {
+            activeTab.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            })
+        }
+    },
+    { immediate: true }
+)
 </script>
 
 <style scoped>
