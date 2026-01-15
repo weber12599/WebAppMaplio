@@ -118,16 +118,21 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        modelValue: Object,
-        themeConfig: Object
+<script setup>
+import { ref } from 'vue'
+
+const props = defineProps({
+    modelValue: {
+        type: Object,
+        required: true
     },
-    data() {
-        return {
-            localSpot: JSON.parse(JSON.stringify(this.modelValue))
-        }
+    themeConfig: {
+        type: Object,
+        required: true
     }
-}
+})
+
+defineEmits(['cancel', 'confirm'])
+
+const localSpot = ref(JSON.parse(JSON.stringify(props.modelValue)))
 </script>
