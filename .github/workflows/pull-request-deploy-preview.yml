@@ -10,6 +10,7 @@ jobs:
         permissions:
             contents: write
             checks: write
+            deployments: write
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -51,7 +52,7 @@ jobs:
               uses: ./.github/actions/build-and-deploy
               with:
                   mode: 'online'
-                  deploy_firebase: 'true'
+                  deploy_firebase: ${{ steps.check_secrets.outputs.online_ok == 'true' && 'true' || 'false' }}
                   deploy_netlify: 'false'
                   deploy_artifact: 'false'
                   github_deployment_environment: pr-${{ github.event.pull_request.number }}
@@ -64,15 +65,13 @@ jobs:
                   firebase_storage_bucket: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
                   firebase_messaging_sender_id: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
                   firebase_app_id: ${{ secrets.VITE_FIREBASE_APP_ID }}
-                  netlify_auth_token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-                  netlify_site_id: ${{ secrets.NETLIFY_SITE_ID }}
 
             - name: PR Preview Offline Deploy
               uses: ./.github/actions/build-and-deploy
               with:
                   mode: 'offline'
-                  deploy_firebase: 'true'
-                  deploy_netlify: 'true'
+                  deploy_firebase: ${{ steps.check_secrets.outputs.offline_ok == 'true' && 'true' || 'false' }}
+                  deploy_netlify: ${{ steps.check_secrets.outputs.netlify_ok == 'true' && 'true' || 'false' }}
                   deploy_artifact: 'false'
                   github_deployment_environment: pr-${{ github.event.pull_request.number }}
                   github_token: ${{ secrets.GITHUB_TOKEN }}
