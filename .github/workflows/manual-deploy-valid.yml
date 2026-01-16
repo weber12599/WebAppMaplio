@@ -204,8 +204,8 @@ jobs:
               with:
                   publish-dir: './dist-offline'
                   production-branch: main
-                  branch: ${{ github.head_ref || 'preview-manual' }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
+                  github-deployment-environment: pr-${{ github.event.pull_request.number }}
                   deploy-message: 'Deploy v${{ env.APP_VERSION }} from GitHub Actions'
                   enable-pull-request-comment: true
                   enable-commit-comment: false
