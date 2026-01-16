@@ -1,0 +1,119 @@
+name: 'Build and Deploy Hosting'
+description: 'Builds the app and deploys to Firebase and Netlify'
+inputs:
+    mode:
+        description: 'Build mode (online or offline)'
+        required: true
+    deploy_firebase:
+        description: 'Whether to deploy to Firebase'
+        default: 'false'
+    deploy_netlify:
+        description: 'Whether to deploy to Netlify'
+        default: 'false'
+    deploy_artifact:
+        description: 'Whether to deploy offline artifact to GitHub Releases'
+        default: 'false'
+    github_token:
+        required: true
+    github_deployment_environment:
+        required: false
+        default: ''
+    firebase_service_account:
+        required: false
+        default: ''
+    firebase_api_key:
+        required: false
+        default: ''
+    firebase_auth_domain:
+        required: false
+        default: ''
+    firebase_project_id:
+        required: false
+        default: ''
+    firebase_storage_bucket:
+        required: false
+        default: ''
+    firebase_messaging_sender_id:
+        required: false
+        default: ''
+    firebase_app_id:
+        required: false
+        default: ''
+    firebase_channel_id:
+        required: false
+        default: ''
+    firebase_expires:
+        required: false
+        default: ''
+    netlify_auth_token:
+        required: false
+    netlify_site_id:
+        required: false
+runs:
+    using: 'composite'
+    steps:
+        - name: Build App
+          shell: bash
+          run: |
+              if [ "${{ inputs.mode }}" == "offline" ]; then
+                npm run build:offline
+                # 統一目錄處理，確保 Firebase 抓到正確產出
+                rm -rf dist && cp -r dist-offline dist
+              else
+                npm run build
+              fi
+          env:
+              VITE_APP_MODE: ${{ inputs.mode }}
+              VITE_APP_VERSION: ${{ env.APP_VERSION }}
+              # Inject all Firebase environment variables (Used during Build)
+              VITE_FIREBASE_API_KEY: ${{ inputs.firebase_api_key }}
+              VITE_FIREBASE_AUTH_DOMAIN: ${{ inputs.firebase_auth_domain }}
+              VITE_FIREBASE_PROJECT_ID: ${{ inputs.firebase_project_id }}
+              VITE_FIREBASE_STORAGE_BUCKET: ${{ inputs.firebase_storage_bucket }}
+              VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ inputs.firebase_messaging_sender_id }}
+              VITE_FIREBASE_APP_ID: ${{ inputs.firebase_app_id }}
+
+        - name: Firebase Deploy
+          if: ${{ inputs.deploy_firebase == 'true' }}
+          uses: FirebaseExtended/action-hosting-deploy@v0
+          with:
+              repoToken: ${{ inputs.github_token }}
+              firebaseServiceAccount: ${{ inputs.firebase_service_account }}
+              projectId: ${{ inputs.firebase_project_id }}
+              channelId: ${{ inputs.firebase_channel_id }}
+              expires: ${{ inputs.firebase_channel_id == 'live' && '' || inputs.firebase_expires }}
+
+        - name: Netlify Deploy
+          if: ${{ inputs.mode == 'offline' && inputs.deploy_netlify == 'true' }}
+          uses: nwtgck/actions-netlify@v3.0
+          with:
+              publish-dir: './dist-offline'
+              production-branch: main
+              github-token: ${{ inputs.github_token }}
+              github-deployment-environment: ${{ inputs.github_deployment_environment }}
+              deploy-message: 'Deploy v${{ env.APP_VERSION }} (${{ inputs.mode }})'
+              enable-pull-request-comment: false
+              enable-commit-comment: false
+              overwrites-pull-request-comment: false
+          env:
+              NETLIFY_AUTH_TOKEN: ${{ inputs.netlify_auth_token }}
+              NETLIFY_SITE_ID: ${{ inputs.netlify_site_id }}
+
+        - name: Zip Offline Artifact
+          if: ${{ inputs.mode == 'offline' && inputs.deploy_artifact == 'true' }}
+          shell: bash
+          run: |
+              cd dist-offline
+              zip -r ../maplio-offline.zip ./*
+              echo "✅ Zip created: maplio-offline.zip"
+
+        - name: Create GitHub Release
+          if: ${{ inputs.mode == 'offline' && inputs.deploy_artifact == 'true' }}
+          uses: softprops/action-gh-release@v1
+          with:
+              tag_name: ${{ env.APP_VERSION }}
+              name: Release ${{ env.APP_VERSION }}
+              files: maplio-offline.zip
+              draft: false
+              prerelease: false
+              generate_release_notes: true
