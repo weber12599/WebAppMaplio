@@ -53,6 +53,7 @@ runs:
     using: 'composite'
     steps:
         - name: Build App
+          if: ${{ inputs.deploy_firebase == 'true' || inputs.deploy_netlify == 'true' || inputs.deploy_artifact == 'true' }}
           shell: bash
           run: |
               if [ "${{ inputs.mode }}" == "offline" ]; then
@@ -81,7 +82,7 @@ runs:
               firebaseServiceAccount: ${{ inputs.firebase_service_account }}
               projectId: ${{ inputs.firebase_project_id }}
               channelId: ${{ inputs.firebase_channel_id }}
-              expires: ${{ inputs.firebase_channel_id == 'live' && '' || inputs.firebase_expires }}
+              expires: ${{ inputs.firebase_channel_id != 'live' && inputs.firebase_expires || '' }}
 
         - name: Netlify Deploy
           if: ${{ inputs.mode == 'offline' && inputs.deploy_netlify == 'true' }}
