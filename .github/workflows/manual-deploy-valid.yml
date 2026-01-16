@@ -143,7 +143,7 @@ jobs:
             # ----------------------------------------------------------------
             - name: Build for Online
               # Execute only if deploy_online is true AND secrets check passed (ONLINE_OK=true)
-              if: ${{ inputs.deploy_online == true && steps.check_secrets.outputs.online_ok == 'true' }}
+              if: ${{ (env.DEPLOY_ONLINE == 'true' || inputs.deploy_online == true) && steps.check_secrets.outputs.online_ok == 'true' }}
               run: npm run build
               env:
                   VITE_APP_VERSION: ${{ env.APP_VERSION }}
@@ -156,7 +156,7 @@ jobs:
                   VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
             - name: Online Deploy to Firebase
-              if: ${{ inputs.deploy_online == true && steps.check_secrets.outputs.online_ok == 'true' }}
+              if: ${{ (env.DEPLOY_ONLINE == 'true' || inputs.deploy_online == true) && steps.check_secrets.outputs.online_ok == 'true' }}
               uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -168,7 +168,7 @@ jobs:
                   message: 'Release ${{ env.APP_VERSION }}'
 
             - name: Skip Online Deploy
-              if: ${{ inputs.deploy_online == true && steps.check_secrets.outputs.online_ok == 'false' }}
+              if: ${{ (env.DEPLOY_ONLINE == 'true' || inputs.deploy_online == true) && steps.check_secrets.outputs.online_ok == 'false' }}
               run: |
                   echo "⚠️ Firebase online deployment skipped due to missing secrets."
 
@@ -182,7 +182,7 @@ jobs:
                   VITE_APP_VERSION: ${{ env.APP_VERSION }}
 
             - name: Offline Deploy to Firebase
-              if: ${{ inputs.deploy_offline == true && steps.check_secrets.outputs.offline_ok == 'true' }}
+              if: ${{ (env.DEPLOY_OFFLINE == 'true' || inputs.deploy_offline == true) && steps.check_secrets.outputs.offline_ok == 'true' }}
               uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -194,12 +194,12 @@ jobs:
                   message: 'Release Offline ${{ env.APP_VERSION }}'
 
             - name: Skip Offline Deploy
-              if: ${{ inputs.deploy_offline == true && steps.check_secrets.outputs.offline_ok == 'false' }}
+              if: ${{ (env.DEPLOY_OFFLINE == 'true' || inputs.deploy_offline == true) && steps.check_secrets.outputs.offline_ok == 'false' }}
               run: |
                   echo "⚠️ Firebase offline deployment skipped due to missing secrets."
 
             - name: Offline Deploy to Netlify
-              if: ${{ inputs.deploy_netlify == true && steps.check_secrets.outputs.netlify_ok == 'true' }}
+              if: ${{ (env.DEPLOY_NETLIFY== 'true' || inputs.deploy_netlify == true) && steps.check_secrets.outputs.netlify_ok == 'true' }}
               uses: nwtgck/actions-netlify@v3.0
               with:
                   publish-dir: './dist-offline'
@@ -215,5 +215,5 @@ jobs:
                   NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
             - name: Skip Netlify Deploy
-              if: ${{ inputs.deploy_netlify == true && steps.check_secrets.outputs.netlify_ok == 'false' }}
+              if: ${{ (env.DEPLOY_NETLIFY== 'true' || inputs.deploy_netlify == true) && steps.check_secrets.outputs.netlify_ok == 'false' }}
               run: echo "⚠️ Netlify offline deployment skipped due to missing secrets."
