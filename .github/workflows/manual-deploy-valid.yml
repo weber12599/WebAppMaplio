@@ -36,6 +36,13 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Set default deploy flags for PR
+              if: ${{ github.event_name == 'pull_request' }}
+              run: |
+                  echo "DEPLOY_ONLINE=true" >> $GITHUB_ENV
+                  echo "DEPLOY_OFFLINE=true" >> $GITHUB_ENV
+                  echo "DEPLOY_NETLIFY=true" >> $GITHUB_ENV
+
             # ----------------------------------------------------------------
             # 1. Version Handling
             # ----------------------------------------------------------------
